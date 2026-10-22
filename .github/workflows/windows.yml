@@ -20,18 +20,18 @@ jobs:
       - name: Snapshots
         shell: pwsh
         run: |
-          $exe = "$pwd/windows/out/DeskHub/DeskHub.exe"
+          $exe = "$pwd/windows/out/Glancedesk/Glancedesk.exe"
           Start-Process $exe -ArgumentList "--snapshot", "$pwd/windows/out/snap/zh" -Wait
           Start-Process $exe -ArgumentList "--snapshot", "$pwd/windows/out/snap/en-dark", "--lang", "en", "--theme", "dark" -Wait
           Get-ChildItem windows/out/snap -Recurse | Format-Table FullName, Length
       - uses: actions/upload-artifact@v4
         with:
-          name: DeskHub-Windows-snapshots
+          name: Glancedesk-Windows-snapshots
           path: windows/out/snap
           retention-days: 14
       - uses: actions/upload-artifact@v4
         with:
-          name: DeskHub-Windows
+          name: Glancedesk-Windows
           path: |
             windows/out/*.exe
             windows/out/*.zip

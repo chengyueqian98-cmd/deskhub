@@ -3,13 +3,15 @@
 <plist version="1.0">
 <dict>
   <key>CFBundleIdentifier</key><string>com.qianshengyue.desktophub.native</string>
-  <key>CFBundleName</key><string>桌面信息中心</string>
-  <key>CFBundleDisplayName</key><string>桌面信息中心</string>
-  <key>CFBundleExecutable</key><string>DeskHub</string>
+  <key>CFBundleName</key><string>Glancedesk</string>
+  <key>CFBundleDisplayName</key><string>Glancedesk</string>
+  <key>CFBundleDevelopmentRegion</key><string>en</string>
+  <key>LSHasLocalizedDisplayName</key><true/>
+  <key>CFBundleExecutable</key><string>Glancedesk</string>
   <key>CFBundleIconFile</key><string>icon</string>
   <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleShortVersionString</key><string>0.5.0</string>
-  <key>CFBundleVersion</key><string>6</string>
+  <key>CFBundleShortVersionString</key><string>0.5.1</string>
+  <key>CFBundleVersion</key><string>7</string>
   <key>LSMinimumSystemVersion</key><string>14.0</string>
   <key>LSApplicationCategoryType</key><string>public.app-category.productivity</string>
   <key>NSHighResolutionCapable</key><true/>

@@ -3,7 +3,7 @@
 import Foundation
 
 enum Update {
-  static let repo = "chengyueqian98-cmd/deskhub"
+  static let repo = "chengyueqian98-cmd/glancedesk"
   static var latestURL: URL { URL(string: "https://api.github.com/repos/\(repo)/releases/latest")! }
   static var releasesPage: String { "https://github.com/\(repo)/releases/latest" }
 

@@ -46,7 +46,7 @@ public class DockWindow : Window
         ShowActivated = false;
         Topmost = true;
         SizeToContent = SizeToContent.WidthAndHeight;
-        Title = "DeskHub Dock";
+        Title = "Glancedesk Dock";
         AllowDrop = true;
         Drop += OnDrop;
         collapsed = m.Store.WinFlag("dockCollapsed", false);
@@ -64,7 +64,7 @@ public class DockWindow : Window
         m.Changed += onChanged;
         Closed += (_, _) => { m.Changed -= onChanged; Reserve(false); };
         var src = System.Windows.Interop.HwndSource.FromHwnd(hwnd);
-        abMsg = Native.RegisterWindowMessage("DeskHubAppBar");
+        abMsg = Native.RegisterWindowMessage("GlancedeskAppBar");
         src?.AddHook((IntPtr h, int msg, IntPtr w, IntPtr l, ref bool handled) =>
         {
             // 任务栏挪了位置、改了大小：重新占一次位置

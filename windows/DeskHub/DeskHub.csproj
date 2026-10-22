@@ -8,10 +8,10 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <Nullable>enable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
-    <AssemblyName>DeskHub</AssemblyName>
+    <AssemblyName>Glancedesk</AssemblyName>
     <RootNamespace>DeskHub</RootNamespace>
-    <Version>0.5.0</Version>
-    <Product>DeskHub 桌面信息中心</Product>
+    <Version>0.5.1</Version>
+    <Product>一瞥 Glancedesk</Product>
     <Company>Shengyue Qian</Company>
     <ApplicationIcon>icon.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>

@@ -1,4 +1,4 @@
-// 设置存储：%APPDATA%\DeskHub\desk.json。键名和 Mac 版一样，所以把 Mac 的 desk.json 拷过来也能直接用。
+// 设置存储：%APPDATA%\Glancedesk\desk.json。键名和 Mac 版一样，所以把 Mac 的 desk.json 拷过来也能直接用。
 // 密码和 API Key 不放这里（在 App 的 Secrets 里用 Windows 自带的 DPAPI 加密单独存）。
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -12,8 +12,18 @@ public class Store
     public JsonObject Data { get; private set; }
     public event Action<HashSet<string>>? Changed;
 
-    public static string DefaultPath =>
-        System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "DeskHub", "desk.json");
+    public static string DefaultPath
+    {
+        get
+        {
+            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            var dir = System.IO.Path.Combine(appData, "Glancedesk");
+            // 改名前（预览版）用的是 DeskHub 文件夹：搬过来，设置和密码都还在
+            var old = System.IO.Path.Combine(appData, "DeskHub");
+            try { if (!Directory.Exists(dir) && Directory.Exists(old)) Directory.Move(old, dir); } catch { }
+            return System.IO.Path.Combine(dir, "desk.json");
+        }
+    }
 
     public Store(string? path = null)
     {

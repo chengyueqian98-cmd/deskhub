@@ -77,7 +77,6 @@ section { padding-top: var(--gap); }
 .badge { display: inline-block; font-size: 12px; font-weight: 600; color: var(--accent); margin-bottom: 12px; letter-spacing: .02em; }
 
 /* 组件清单 */
-.big { font-size: clamp(88px, 14vw, 160px); font-weight: 600; line-height: 1; letter-spacing: -.03em; text-align: center; }
 .widgets { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; max-width: 820px; margin: 36px auto 0; }
 .widgets span { background: var(--block); border-radius: 99px; padding: 8px 18px; font-size: 15px; }
 

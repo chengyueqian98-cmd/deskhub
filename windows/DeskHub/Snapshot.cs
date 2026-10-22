@@ -1,4 +1,4 @@
-// 截图模式：DeskHub.exe --snapshot <文件夹> [--lang en] [--theme dark]
+// 截图模式：Glancedesk.exe --snapshot <文件夹> [--lang en] [--theme dark]
 // 用示例数据把桌面组件、浮层编辑态、Dock、设置各页、引导各页渲染成 PNG（不开窗口、不联网、不碰你的设置文件）。
 // CI 在 Windows 机器上跑它，开发时不用开 Windows 电脑也能看界面。
 using System;
@@ -19,7 +19,7 @@ static class Snapshot
     public static void Run(string dir, string lang, string theme)
     {
         Directory.CreateDirectory(dir);
-        var tmp = Path.Combine(Path.GetTempPath(), "deskhub-snap-" + Guid.NewGuid().ToString("N"), "desk.json");
+        var tmp = Path.Combine(Path.GetTempPath(), "glancedesk-snap-" + Guid.NewGuid().ToString("N"), "desk.json");
         var store = new Store(tmp);
         store.Set(new JsonObject { ["lang"] = lang, ["theme"] = theme, ["onboarded"] = true, ["colors"] = "rup" });
         var m = new Model(store);
@@ -161,7 +161,7 @@ static class Snapshot
             Items = new List<MailItem>
             {
                 new(Strings.En ? "School Registrar" : "教务处", "registrar@school.edu", Strings.En ? "Spring enrollment opens Monday" : "下学期选课周一开始", Min(-20), "imap:1", "Gmail"),
-                new("GitHub", "noreply@github.com", Strings.En ? "[deskhub] New star" : "[deskhub] 有人点了 Star", Min(-75), "imap:2", "Gmail"),
+                new("GitHub", "noreply@github.com", Strings.En ? "[glancedesk] New star" : "[glancedesk] 有人点了 Star", Min(-75), "imap:2", "Gmail"),
                 new(Strings.En ? "Bank" : "银行", "service@bank.com", Strings.En ? "Your monthly statement is ready" : "本月账单已出", Min(-300), "imap:3", "Gmail"),
             },
         };

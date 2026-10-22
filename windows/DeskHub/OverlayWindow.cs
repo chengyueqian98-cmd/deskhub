@@ -35,7 +35,7 @@ public class OverlayWindow : Window
         ResizeMode = ResizeMode.NoResize;
         ShowInTaskbar = false;
         Topmost = true;
-        Title = "DeskHub";
+        Title = "Glancedesk";
         Background = m.Pal.Dim;
         FontFamily = UI.Font;
 

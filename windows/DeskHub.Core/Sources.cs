@@ -127,7 +127,7 @@ public static class FX
 // —— 检查更新：只问 GitHub 最新版本号，不自动下载安装 ——
 public static class Update
 {
-    public const string Repo = "chengyueqian98-cmd/deskhub";
+    public const string Repo = "chengyueqian98-cmd/glancedesk";
     public static string LatestUrl => $"https://api.github.com/repos/{Repo}/releases/latest";
     public static string ReleasesPage => $"https://github.com/{Repo}/releases/latest";
 

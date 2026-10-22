@@ -99,7 +99,7 @@ final class NotchModel: ObservableObject {
     func api(_ path: String, _ q: [URLQueryItem]) async -> Any? {
       var c = URLComponents(string: "https://lrclib.net/api/" + path)!
       c.queryItems = q
-      guard let d = try? await Fetch.get(c.url!, headers: ["User-Agent": "DeskHub/0.3 (personal desktop app)"], timeout: 8) else { return nil }
+      guard let d = try? await Fetch.get(c.url!, headers: ["User-Agent": "Glancedesk (desktop app)"], timeout: 8) else { return nil }
       return try? JSONSerialization.jsonObject(with: d)
     }
     let tt = title.applyingTransform(StringTransform("Hans-Hant"), reverse: false) ?? title

@@ -27,7 +27,7 @@ static class Net
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         var h = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
-        h.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 DeskHub/" + App.Version + " (Windows)");
+        h.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 Glancedesk/" + App.Version + " (Windows)");
         return h;
     }
 
@@ -103,7 +103,7 @@ static class ImapMail
         {
             await c.ConnectAsync(a.Host, a.Port, MailKit.Security.SecureSocketOptions.SslOnConnect, ct);
             // 网易邮箱要求先报一下客户端身份
-            if (c.Capabilities.HasFlag(ImapCapabilities.Id)) { try { await c.IdentifyAsync(new ImapImplementation { Name = "DeskHub", Version = App.Version }, ct); } catch { } }
+            if (c.Capabilities.HasFlag(ImapCapabilities.Id)) { try { await c.IdentifyAsync(new ImapImplementation { Name = "Glancedesk", Version = App.Version }, ct); } catch { } }
             try { await c.AuthenticateAsync(a.Email, pass, ct); }
             catch (Exception e) { throw new Exception(L("邮箱登录失败：大多数邮箱要用「应用专用密码 / 授权码」，不是网页登录密码。") + $" ({e.Message})"); }
             await c.Inbox.OpenAsync(FolderAccess.ReadOnly, ct);
@@ -347,14 +347,15 @@ static class AutoStart
 
     public static bool Enabled
     {
-        get { try { using var k = Registry.CurrentUser.OpenSubKey(RunKey); return k?.GetValue("DeskHub") != null; } catch { return false; } }
+        get { try { using var k = Registry.CurrentUser.OpenSubKey(RunKey); return k?.GetValue("Glancedesk") != null; } catch { return false; } }
         set
         {
             try
             {
                 using var k = Registry.CurrentUser.CreateSubKey(RunKey);
-                if (value) k.SetValue("DeskHub", $"\"{Environment.ProcessPath}\" --startup");
-                else k.DeleteValue("DeskHub", false);
+                k.DeleteValue("DeskHub", false);   // 改名前的旧名字
+                if (value) k.SetValue("Glancedesk", $"\"{Environment.ProcessPath}\" --startup");
+                else k.DeleteValue("Glancedesk", false);
             }
             catch { }
         }

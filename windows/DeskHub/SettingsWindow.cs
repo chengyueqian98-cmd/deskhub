@@ -44,7 +44,7 @@ public class SettingsWindow : Window
     void Draw()
     {
         System.Windows.Input.Keyboard.ClearFocus();   // 让正在改的输入框先存一下
-        Title = L("设置") + " · DeskHub";
+        Title = L("设置") + " · " + L("一瞥");
         Background = P.Window;
         nav.Children.Clear();
         foreach (var (id, zh) in Pages)
@@ -345,7 +345,7 @@ public class SettingsWindow : Window
 
     void About(StackPanel b)
     {
-        Section(b, "DeskHub",
+        Section(b, L("一瞥"),
             Line(L("版本"), UI.T(App.Version, 13, P.Text2)),
             Line(L("开源"), Link("github.com/" + Update.Repo, "https://github.com/" + Update.Repo)),
             Line(L("设置文件"), UI.Pill(L("打开文件夹"), P, () => UI.Open(Path.GetDirectoryName(Store.DefaultPath)!))),

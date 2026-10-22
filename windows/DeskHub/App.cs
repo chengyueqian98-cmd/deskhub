@@ -1,5 +1,5 @@
 // 入口：只开一个（再双击一次 = 打开浮层），托盘图标、全局快捷键 Ctrl+Alt+空格、每块屏幕的桌面层、Dock。
-// Explorer 重启（任务栏重建）时自动重新放回桌面层。出错写进 %APPDATA%\DeskHub\error.log，不弹窗打扰。
+// Explorer 重启（任务栏重建）时自动重新放回桌面层。出错写进 %APPDATA%\Glancedesk\error.log，不弹窗打扰。
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,10 +30,10 @@ public static class Program
             catch (Exception e) { Directory.CreateDirectory(args[snap + 1]); File.WriteAllText(Path.Combine(args[snap + 1], "error.txt"), e.ToString()); }
             return;
         }
-        using var quit = new EventWaitHandle(false, EventResetMode.AutoReset, "DeskHub.Quit");
+        using var quit = new EventWaitHandle(false, EventResetMode.AutoReset, "Glancedesk.Quit");
         if (args.Contains("--quit")) { quit.Set(); return; }   // 卸载程序用：让正在运行的那个正常退出（会把桌面图标还回去）
-        using var mutex = new Mutex(true, "DeskHub.SingleInstance", out var first);
-        using var show = new EventWaitHandle(false, EventResetMode.AutoReset, "DeskHub.ShowOverlay");
+        using var mutex = new Mutex(true, "Glancedesk.SingleInstance", out var first);
+        using var show = new EventWaitHandle(false, EventResetMode.AutoReset, "Glancedesk.ShowOverlay");
         if (!first) { show.Set(); return; }   // 已经开着：让那个打开浮层
         var app = new App(args.Contains("--startup"));
         ThreadPool.RegisterWaitForSingleObject(show, (_, _) => app.Dispatcher.BeginInvoke(app.ToggleOverlay), null, -1, false);
@@ -103,7 +103,7 @@ public class App : Application
         if (!startup && M.Store.Onboarded && M.Store.Win["welcomed"] == null)
         {
             M.Store.SetWin("welcomed", true);
-            tray?.ShowBalloonTip(6000, L("桌面信息中心已经在运行"), L("按 Ctrl + Alt + 空格 打开浮层；右下角托盘图标里有设置"), Forms.ToolTipIcon.None);
+            tray?.ShowBalloonTip(6000, L("一瞥已经在运行"), L("按 Ctrl + Alt + 空格 打开浮层；右下角托盘图标里有设置"), Forms.ToolTipIcon.None);
         }
     }
 
@@ -195,7 +195,7 @@ public class App : Application
     // —— 托盘 ——
     void SetupTray()
     {
-        tray = new Forms.NotifyIcon { Text = "DeskHub", Visible = true };
+        tray = new Forms.NotifyIcon { Text = Strings.En ? "Glancedesk" : "一瞥", Visible = true };
         try
         {
             var s = GetResourceStream(new Uri("pack://application:,,,/icon.ico"))?.Stream;
@@ -229,7 +229,7 @@ public class App : Application
     // —— 全局快捷键 + Explorer 重启 ——
     void SetupHotkey()
     {
-        msg = new HwndSource(new HwndSourceParameters("DeskHubMessages") { Width = 0, Height = 0, WindowStyle = 0 });
+        msg = new HwndSource(new HwndSourceParameters("GlancedeskMessages") { Width = 0, Height = 0, WindowStyle = 0 });
         msg.AddHook(WndProc);
         taskbarCreated = Native.RegisterWindowMessage("TaskbarCreated");
         const uint MOD_ALT = 0x1, MOD_CONTROL = 0x2, MOD_NOREPEAT = 0x4000, VK_SPACE = 0x20;

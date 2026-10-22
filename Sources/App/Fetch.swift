@@ -58,7 +58,7 @@ enum Fetch {
       for (s, f) in jobs {
         g.addTask {
           guard let url = URL(string: f.url),
-                let d = try? await get(url, headers: ["User-Agent": "Mozilla/5.0 DeskHub"]),
+                let d = try? await get(url, headers: ["User-Agent": "Mozilla/5.0 Glancedesk"]),
                 let xml = String(data: d, encoding: .utf8) ?? String(data: d, encoding: .isoLatin1) else { return nil }
           var items = Array(News.parseRss(xml, tag: f.tag, source: s.name).prefix(News.perFeed))
           if s.t2s { for i in items.indices { items[i].title = News.t2s(items[i].title); items[i].desc = News.t2s(items[i].desc) } }

@@ -1,11 +1,13 @@
-# 桌面信息中心 · Desk Hub
+# 一瞥 · Glancedesk
+
+**看一眼 今天的事都在这。** 官网：[glancedesk.cn](https://glancedesk.cn)（原名「桌面信息中心 / DeskHub」）
 
 **一个只在重要时刻说话的桌面（Mac 和 Windows）。** 时钟、天气、日程、行情、邮件安静地铺在壁纸两侧，中间留给你；管家只在真正重要的时候出声。按 `⌃⌥空格` 打开可以操作的那一层。
 
 *A desktop for Mac and Windows that only speaks up when it matters. English below.*
 
-![下载量](https://img.shields.io/github/downloads/chengyueqian98-cmd/deskhub/total?label=下载)
-![最新版本](https://img.shields.io/github/v/release/chengyueqian98-cmd/deskhub?label=版本)
+![下载量](https://img.shields.io/github/downloads/chengyueqian98-cmd/glancedesk/total?label=下载)
+![最新版本](https://img.shields.io/github/v/release/chengyueqian98-cmd/glancedesk?label=版本)
 
 ![桌面](docs/screenshots/desk.png)
 
@@ -25,7 +27,7 @@
 
 ## 安装
 
-1. 到 [Releases](../../releases) 下载最新的 `DeskHub-x.y.z.dmg`，把 App 拖进「应用程序」。
+1. 到 [Releases](../../releases) 下载最新的 `Glancedesk-x.y.z.dmg`，把 App 拖进「应用程序」。
 2. **第一次打开会被系统拦下**（这个软件没有付费的 Apple 开发者签名）：打开「系统设置 → 隐私与安全性」，拉到最下面点「仍要打开」。之后就不会再问了。
 3. 需要 macOS 14 或更新，Apple 芯片（M1 及以后）。
 
@@ -36,7 +38,7 @@ C# / WPF 原生，和 Mac 版同一套组件和布局规则，另外多了两样
 - **底部 Dock**：像 Mac 那样放常用的应用和文件（下载文件夹点开是一叠最近的文件）。把任何程序、快捷方式、文件拖上去就能放进去，右键挪位置、移除；右端的箭头能收起来，也可以设成自动收起。
 - **清空桌面**：一键把桌面图标藏起来，只留壁纸和组件；关掉开关或退出就回来。
 
-安装：到 [Releases](../../releases) 下载 `DeskHub-Windows-x.y.z-Setup.exe`（不想安装就下 `-portable.zip`，解压直接运行）。**第一次打开 Windows 会弹「已保护你的电脑」**（没有付费的代码签名）：点「更多信息 → 仍要运行」。需要 Windows 10 1809 或更新、64 位；自带运行库，不用另装 .NET。
+安装：到 [Releases](../../releases) 下载 `Glancedesk-Windows-x.y.z-Setup.exe`（不想安装就下 `-portable.zip`，解压直接运行）。**第一次打开 Windows 会弹「已保护你的电脑」**（没有付费的代码签名）：点「更多信息 → 仍要运行」。需要 Windows 10 1809 或更新、64 位；自带运行库，不用另装 .NET。
 
 在 Windows 上：日程用 .ics 订阅链接（Google / Outlook 日历都能导出），邮件用 IMAP，待办存在本机；「正在播放」能看到 Spotify、网易云、QQ 音乐和浏览器里的播放。
 
@@ -46,7 +48,7 @@ C# / WPF 原生，和 Mac 版同一套组件和布局规则，另外多了两样
 
 ```bash
 ./test.sh                 # 跑测试
-./build.sh                # 编译到 build/桌面信息中心.app
+./build.sh                # 编译到 build/Glancedesk.app
 ./scripts/make-dmg.sh     # 出安装包
 ```
 
@@ -71,7 +73,7 @@ dotnet build windows/DeskHub/DeskHub.csproj         # 编译
 
 ## English
 
-**Desk Hub** puts your clock, weather, calendar, to-dos, mail, stocks and news quietly on both sides of your wallpaper, and a butler that only speaks up when something really needs you. Press `⌃⌥Space` for the interactive overlay.
+**Glancedesk** puts your clock, weather, calendar, to-dos, mail, stocks and news quietly on both sides of your wallpaper, and a butler that only speaks up when something really needs you. Press `⌃⌥Space` for the interactive overlay.
 
 - Mail from the Mac Mail app or any IMAP mailbox (Gmail, iCloud, Outlook… read-only, app password); calendars from Mac Calendar or .ics subscription links.
 - Native SwiftUI: 6 MB download, ~50 MB memory, near-zero idle CPU.
@@ -82,7 +84,7 @@ dotnet build windows/DeskHub/DeskHub.csproj         # 编译
 
 **Install:** download the DMG from Releases and drag the app to Applications. On first launch macOS will block it (no paid Developer ID) — go to System Settings → Privacy & Security and click "Open Anyway". Requires macOS 14+ on Apple silicon.
 
-**Windows (preview):** native C# / WPF with the same widgets and layout rules, plus a Mac-style **Dock** at the bottom (apps, files, a Downloads stack; drag anything onto it, collapse or auto-hide it) and a **clean desktop** switch that hides desktop icons. Download `DeskHub-Windows-x.y.z-Setup.exe` (or the portable zip) from Releases. SmartScreen will warn on first launch because the app isn't code-signed: click "More info → Run anyway". Windows 10 1809+ (64-bit); no .NET install needed.
+**Windows (preview):** native C# / WPF with the same widgets and layout rules, plus a Mac-style **Dock** at the bottom (apps, files, a Downloads stack; drag anything onto it, collapse or auto-hide it) and a **clean desktop** switch that hides desktop icons. Download `Glancedesk-Windows-x.y.z-Setup.exe` (or the portable zip) from Releases. SmartScreen will warn on first launch because the app isn't code-signed: click "More info → Run anyway". Windows 10 1809+ (64-bit); no .NET install needed.
 
 **Not investment advice.** Market data is delayed and for display only.
 

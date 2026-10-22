@@ -5,7 +5,7 @@ $ErrorActionPreference = "Stop"
 $env:PYTHONIOENCODING = "utf-8"
 Set-Location (Split-Path $PSScriptRoot -Parent)
 if (-not $Version) { $Version = ([xml](Get-Content DeskHub/DeskHub.csproj)).Project.PropertyGroup.Version | Select-Object -First 1 }
-Write-Host "== DeskHub $Version =="
+Write-Host "== Glancedesk $Version =="
 
 dotnet run --project DeskHub.Tests -c Release
 if ($LASTEXITCODE) { throw "测试没通过" }
@@ -15,13 +15,13 @@ if ($LASTEXITCODE) { throw "英文对照表不全" }
 if (Test-Path out) { Remove-Item out -Recurse -Force }
 dotnet publish DeskHub/DeskHub.csproj -c Release -r win-x64 --self-contained true `
   -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true `
-  -p:DebugType=none -p:Version=$Version -o out/DeskHub
+  -p:DebugType=none -p:Version=$Version -o out/Glancedesk
 if ($LASTEXITCODE) { throw "发布失败" }
 
-Compress-Archive -Path out/DeskHub/DeskHub.exe -DestinationPath "out/DeskHub-Windows-$Version-portable.zip" -Force
+Compress-Archive -Path out/Glancedesk/Glancedesk.exe -DestinationPath "out/Glancedesk-Windows-$Version-portable.zip" -Force
 
 $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
 if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress | Out-Null }
-& $iscc "/DAppVersion=$Version" installer/DeskHub.iss
+& $iscc "/DAppVersion=$Version" installer/Glancedesk.iss
 if ($LASTEXITCODE) { throw "安装包打包失败" }
 Get-ChildItem out -File | Format-Table Name, Length

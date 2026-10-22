@@ -68,7 +68,7 @@ extension DeskModel {
       let c = store.config(it.id)
       guard let s = c["url"] as? String, let u = URL(string: s) else { continue }
       do {
-        let d = try await Fetch.get(u, headers: ["User-Agent": "Mozilla/5.0 DeskHub"])
+        let d = try await Fetch.get(u, headers: ["User-Agent": "Mozilla/5.0 Glancedesk"])
         let xml = String(data: d, encoding: .utf8) ?? String(decoding: d, as: UTF8.self)
         let title = (c["title"] as? String).flatMap { $0.isEmpty ? nil : $0 } ?? News.feedTitle(xml) ?? u.host ?? ""
         feeds[it.id] = NewsState(items: Array(News.parseFeed(xml, source: title).sorted { $0.ts > $1.ts }.prefix(30)), at: nowMs())
@@ -189,7 +189,7 @@ extension DeskModel {
       // 每个新版本只发一次系统通知
       if store.data["notifiedVersion"] as? String != u.version {
         store.set(["notifiedVersion": u.version])
-        notify(L("桌面信息中心有新版本 %@", u.version), L("在浮层右上角或「设置 → 外观」里点一下去下载"))
+        notify(L("一瞥有新版本 %@", u.version), L("在浮层右上角或「设置 → 外观」里点一下去下载"))
       }
     } else if manual { updateStatus = L("已经是最新版本") }
   }

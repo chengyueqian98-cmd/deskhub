@@ -330,7 +330,7 @@ public class Model
         if (NewVersion != null && U.Str(Store.Win["notifiedVersion"]) != NewVersion.Version)
         {
             Store.SetWin("notifiedVersion", NewVersion.Version);
-            Notify?.Invoke(L("桌面信息中心有新版本"), L("%@ 已发布，点开看看更新了什么", NewVersion.Version));
+            Notify?.Invoke(L("一瞥有新版本"), L("%@ 已发布，点开看看更新了什么", NewVersion.Version));
         }
         Raise("update");
     }

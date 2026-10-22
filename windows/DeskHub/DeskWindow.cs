@@ -33,7 +33,7 @@ public class DeskWindow : Window
         ShowInTaskbar = false;
         ShowActivated = false;
         Focusable = false;
-        Title = "DeskHub Desktop";
+        Title = "Glancedesk Desktop";
         if (host == null) { AllowsTransparency = true; Background = Brushes.Transparent; }
         else Background = Brushes.Black;
 

@@ -32,7 +32,7 @@ public class Onboarding : Window
         ResizeMode = ResizeMode.NoResize;
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
         FontFamily = UI.Font;
-        Title = "DeskHub";
+        Title = "Glancedesk";
         Content = new Border { CornerRadius = new CornerRadius(22), Background = m.Pal.Window, BorderBrush = m.Pal.CardBorder, BorderThickness = new Thickness(1), Child = host, Margin = new Thickness(20), Effect = UI.Shadow(40, 0.35) };
         MouseLeftButtonDown += (_, e) => { if (e.ButtonState == MouseButtonState.Pressed) try { DragMove(); } catch { } };
         Draw();
@@ -96,7 +96,7 @@ public class Onboarding : Window
         try { icon = new Image { Source = BitmapFrame.Create(new Uri("pack://application:,,,/icon.png")), Width = 96, Height = 96 }; } catch { }
         var lang = UI.H(0, Option("中文", "简体中文", Strings.Lang == "zh", () => SetLang("zh")), Option("English", "English", Strings.Lang == "en", () => SetLang("en")));
         var body = UI.V(26, icon, lang);
-        var g = Page(L("桌面信息中心"), L("把时间、天气、日程、邮件和行情放到桌面上。安静地待在图标后面，需要时按一下就出来。"), body, back: false);
+        var g = Page(L("一瞥"), L("把时间、天气、日程、邮件和行情放到桌面上。安静地待在图标后面，需要时按一下就出来。"), body, back: false);
         return g;
     }
 

@@ -16,7 +16,7 @@
     win.className = 'btn primary'; mac.className = 'btn ghost';
   }
 
-  fetch('https://api.github.com/repos/chengyueqian98-cmd/deskhub/releases/latest')
+  fetch('https://api.github.com/repos/chengyueqian98-cmd/glancedesk/releases/latest')
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (rel) {
       if (!rel) return;

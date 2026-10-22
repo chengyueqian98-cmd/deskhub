@@ -20,7 +20,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: build/DeskHub-*.dmg
+          files: build/Glancedesk-*.dmg
           generate_release_notes: true
 
   windows:
@@ -42,5 +42,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            windows/out/DeskHub-Windows-*-Setup.exe
-            windows/out/DeskHub-Windows-*-portable.zip
+            windows/out/Glancedesk-Windows-*-Setup.exe
+            windows/out/Glancedesk-Windows-*-portable.zip

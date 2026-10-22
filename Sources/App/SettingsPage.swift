@@ -114,7 +114,7 @@ struct SettingsPage: View {
             do { if on { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() } } catch { model.toast = L("设置失败：") + error.localizedDescription }
             loginOn = SMAppService.mainApp.status == .enabled
           })).toggleStyle(.switch).labelsHidden()
-          Note(text: L("登录 Mac 后自动显示桌面信息中心"))
+          Note(text: L("登录 Mac 后自动显示一瞥"))
         }
       }
 

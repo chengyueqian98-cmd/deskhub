@@ -104,7 +104,7 @@ enum IMAPMail {
     let c = IMAPConnection(host: a.host, port: a.port)
     try await c.open()
     // 网易邮箱要求先报一下客户端身份，否则后面的命令会被拒绝；别的服务器不认识也没关系
-    _ = try? await c.command("ID (\"name\" \"DeskHub\" \"version\" \"1.0\")")
+    _ = try? await c.command("ID (\"name\" \"Glancedesk\" \"version\" \"1.0\")")
     do { try await c.command("LOGIN \(IMAPProviders.quote(a.email)) \(IMAPProviders.quote(pass))", secret: true) } catch {
       c.close()
       throw IMAPConnection.Failure(message: L("邮箱登录失败：大多数邮箱要用「应用专用密码 / 授权码」，不是网页登录密码。") + " (\(error.localizedDescription))")

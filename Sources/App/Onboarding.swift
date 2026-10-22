@@ -166,7 +166,7 @@ struct OnboardingView: View {
   private var welcome: some View {
     VStack(spacing: 34) {
       Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 96, height: 96)
-      title(L("桌面信息中心"), L("一个只在重要时刻说话的桌面。"))
+      title(L("一瞥"), L("看一眼 今天的事都在这"))
       VStack(alignment: .leading, spacing: 20) {
         feature("rectangle.split.3x1", L("桌面上一眼看全"), L("时钟、天气、日程、行情、邮件安静地放在壁纸两侧，中间留给你。"))
         feature("sparkle", L("管家只说重要的事"), L("有人在等你回、日程快开始了、到了你设的价——才会提醒你。"))

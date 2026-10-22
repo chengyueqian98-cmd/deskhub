@@ -1,4 +1,4 @@
-// 桌面信息中心（原生版）入口。
+// 一瞥 Glancedesk（原名桌面信息中心）入口。
 import AppKit
 
 @MainActor
@@ -96,9 +96,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let main = NSMenu()
     let appItem = NSMenuItem()
     let appMenu = NSMenu()
-    appMenu.addItem(withTitle: L("关于桌面信息中心"), action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
+    appMenu.addItem(withTitle: L("关于一瞥"), action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
     appMenu.addItem(.separator())
-    appMenu.addItem(withTitle: L("退出桌面信息中心"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+    appMenu.addItem(withTitle: L("退出一瞥"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
     appItem.submenu = appMenu
     main.addItem(appItem)
 
