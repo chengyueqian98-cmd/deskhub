@@ -2,6 +2,7 @@
 # 用法（在 windows 目录）：powershell -ExecutionPolicy Bypass -File scripts\build.ps1 [-Version 0.5.1]
 param([string]$Version = "")
 $ErrorActionPreference = "Stop"
+$env:PYTHONIOENCODING = "utf-8"
 Set-Location (Split-Path $PSScriptRoot -Parent)
 if (-not $Version) { $Version = ([xml](Get-Content DeskHub/DeskHub.csproj)).Project.PropertyGroup.Version | Select-Object -First 1 }
 Write-Host "== DeskHub $Version =="

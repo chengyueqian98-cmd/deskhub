@@ -3,6 +3,7 @@
 用法（在 windows/ 目录）：python3 scripts/gen-strings.py        生成 + 检查
                          python3 scripts/gen-strings.py --check 只检查（CI 用）"""
 import re, json, glob, sys, os
+sys.stdout.reconfigure(encoding="utf-8")   # Windows 控制台默认不是 UTF-8
 here = os.path.dirname(os.path.abspath(__file__)); root = os.path.dirname(here)
 mac_swift = os.path.join(root, '..', 'Sources', 'Core', 'StringsEN.swift')
 out = os.path.join(root, 'DeskHub.Core', 'StringsMac.g.cs')
