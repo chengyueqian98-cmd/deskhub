@@ -103,7 +103,7 @@ public class OverlayWindow : Window
         hint.Visibility = ask.Text == "" ? Visibility.Visible : Visibility.Collapsed;
         ask.TextChanged += (_, _) => hint.Visibility = ask.Text == "" ? Visibility.Visible : Visibility.Collapsed;
         var askBox = new Grid(); askBox.Children.Add(hint); askBox.Children.Add(ask);
-        var pill = new Border { Background = p.Card, BorderBrush = p.CardBorder, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(22), Padding = new Thickness(18, 10, 18, 10), Child = UI.H(10, UI.Icon(G.Search, 14, p.Text3), askBox), Effect = UI.Shadow(20, 0.18) };
+        var pill = new Border { Background = p.Window, BorderBrush = p.CardBorder, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(22), Padding = new Thickness(18, 10, 18, 10), Child = UI.H(10, UI.Icon(G.Search, 14, p.Text3), askBox), Effect = UI.Shadow(20, 0.18) };
         bar.Children.Add(pill);
 
         var right = UI.H(6,
@@ -149,7 +149,7 @@ public class OverlayWindow : Window
             DeepSeek.HasKey ? null : UI.Pill(L("填 API Key"), p, () => { Close(); App.Instance.ShowSettings("ai"); }, true));
         actions.Margin = new Thickness(0, 10, 0, 0);
         answer.Child = UI.V(8, UI.T(question, 12, p.Text3), scroll, actions);
-        answer.Background = p.Card; answer.BorderBrush = p.CardBorder; answer.BorderThickness = new Thickness(1);
+        answer.Background = p.Window; answer.BorderBrush = p.CardBorder; answer.BorderThickness = new Thickness(1);
         answer.CornerRadius = new CornerRadius(18); answer.Padding = new Thickness(20, 16, 20, 16);
         answer.Width = 620; answer.HorizontalAlignment = HorizontalAlignment.Center; answer.VerticalAlignment = VerticalAlignment.Top;
         answer.Margin = new Thickness(0, 86, 0, 0); answer.Effect = UI.Shadow(30, 0.25);

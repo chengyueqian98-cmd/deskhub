@@ -106,7 +106,7 @@ public class Onboarding : Window
     {
         var opts = new[] { ("student", L("学生"), L("课表、待办、倒数日")), ("work", L("上班"), L("邮件、日程、世界时钟")), ("invest", L("投资"), L("行情、新闻、加密货币")), ("minimal", L("极简"), L("只要时间和天气")) };
         var wrap = new WrapPanel { HorizontalAlignment = HorizontalAlignment.Center };
-        foreach (var (id, t, s) in opts) { var pid = id; wrap.Children.Add(Option(t, s, persona == id, () => persona = pid, 145)); }
+        foreach (var (id, t, s) in opts) { var pid = id; wrap.Children.Add(Option(t, s, persona == id, () => persona = pid, 136)); }
         return Page(L("你主要用电脑做什么？"), L("先给你摆一套合适的组件，之后随时可以加、删、拖动。"), wrap);
     }
 
