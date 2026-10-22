@@ -92,8 +92,11 @@ public class SettingsWindow : Window
     UIElement Line(string label, UIElement right, string? note = null)
     {
         var l = UI.V(2, UI.T(label, 13.5, P.Text), note == null ? null : UI.Wrap(note, 11.5, P.Text3));
-        l.MaxWidth = 340;
-        return UI.Row(l, right);
+        l.HorizontalAlignment = HorizontalAlignment.Left;
+        l.Margin = new Thickness(0, 0, 16, 0);
+        var row = UI.Row(l, right);
+        row.MinHeight = 30;
+        return row;
     }
 
     CheckBox Toggle(bool on, Action<bool> set)
@@ -122,6 +125,16 @@ public class SettingsWindow : Window
     TextBox Input(string text, double width = 260)
     {
         return new TextBox { Text = text, Width = width, FontSize = 13, Padding = new Thickness(8, 5, 8, 5), Foreground = P.Text, Background = P.Fill, BorderBrush = P.CardBorder, CaretBrush = P.Text };
+    }
+
+    /** 输入框里的灰色提示字（一打字就消失） */
+    Grid WithHint(TextBox box, string hint)
+    {
+        var t = UI.T(hint, 12.5, P.Text3);
+        t.IsHitTestVisible = false; t.Margin = new Thickness(10, 0, 0, 0); t.VerticalAlignment = VerticalAlignment.Center;
+        box.TextChanged += (_, _) => t.Visibility = box.Text == "" ? Visibility.Visible : Visibility.Collapsed;
+        var g = new Grid(); g.Children.Add(box); g.Children.Add(t);
+        return g;
     }
 
     PasswordBox Secret(double width = 260) => new() { Width = width, FontSize = 13, Padding = new Thickness(8, 5, 8, 5), Foreground = P.Text, Background = P.Fill, BorderBrush = P.CardBorder, CaretBrush = P.Text };
@@ -276,6 +289,8 @@ public class SettingsWindow : Window
         }
         var nameBox = Input("", 140);
         var urlBox = Input("", 300);
+        var nameHost = WithHint(nameBox, L("名字（可不填）"));
+        var urlHost = WithHint(urlBox, "https://…/basic.ics");
         var add = UI.Pill(L("添加"), P, () =>
         {
             var u = urlBox.Text.Trim();
@@ -284,7 +299,7 @@ public class SettingsWindow : Window
         }, true);
         Section(b, L("日历订阅"),
             subs.Count == 0 ? Hint(L("还没有订阅。Windows 没有像 Mac 那样谁都能读的系统日历，所以用订阅链接：")) : list,
-            UI.H(6, nameBox, urlBox, add),
+            UI.H(6, nameHost, urlHost, add),
             UI.V(3, Hint(L("· Google 日历：设置 → 选中日历 → 「iCal 格式的私密地址」")), Hint(L("· Outlook：设置 → 日历 → 共享日历 → 发布日历 → ICS 链接")), Hint(L("· 学校课表、节假日日历通常也有 .ics 链接"))),
             m.CalError != null ? Hint("✗ " + m.CalError) : null);
         Section(b, L("提醒和显示"),

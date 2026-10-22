@@ -129,7 +129,7 @@ static class UI
         var t = new ControlTemplate(typeof(Button));
         var bd = new FrameworkElementFactory(typeof(Border));
         bd.SetValue(Border.BackgroundProperty, bg);
-        bd.SetValue(Border.CornerRadiusProperty, new CornerRadius(99));
+        bd.SetValue(Border.CornerRadiusProperty, new CornerRadius(13));
         bd.SetValue(Border.PaddingProperty, new Thickness(14, 5, 14, 6));
         var cp = new FrameworkElementFactory(typeof(ContentPresenter));
         cp.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
@@ -168,6 +168,6 @@ static class G
     public const string Add = "", Close = "", Settings = "", Mail = "", Calendar = "", Clock = "", Globe = "",
         Music = "", Play = "", Pause = "", Prev = "", Next = "", Check = "", Delete = "", Folder = "",
         Down = "", Up = "", Search = "", Refresh = "", Star = "", Doc = "", Edit = "", More = "",
-        News = "", Chart = "", Note = "", Photo = "", Timer = "", Heart = "", Gift = "", Pin = "",
+        News = "", Chart = "", Note = "", Photo = "", Timer = "", Heart = "", Gift = "", Pin = "",
         Download = "", Recycle = "", Apps = "", Cpu = "", Money = "", Moon = "", Umbrella = "", Person = "";
 }

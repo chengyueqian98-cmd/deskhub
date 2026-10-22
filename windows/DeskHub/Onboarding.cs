@@ -44,11 +44,14 @@ public class Onboarding : Window
     public void GoNext() => Next();
     void Back() { if (pageNo > 0) { pageNo--; Draw(); } }
 
+    public static bool NoAnimation;   // 截图时不要淡入（不然截到的是透明的）
+
     void Draw()
     {
         var page = pageNo switch { 0 => Welcome(), 1 => Persona(), 2 => City(), 3 => Desktop(), _ => Finish() };
-        page.Opacity = 0;
         host.Content = page;
+        if (NoAnimation) return;
+        page.Opacity = 0;
         page.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(220)));
     }
 

@@ -160,6 +160,7 @@ public static partial class Strings
         ["通用"] = "General",
         ["行情与新闻"] = "Stocks & News",
         ["关于"] = "About",
+        ["上海"] = "Shanghai",
         ["蓝"] = "Blue",
         ["紫"] = "Purple",
         ["粉"] = "Pink",

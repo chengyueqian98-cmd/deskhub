@@ -137,6 +137,9 @@ public class OverlayWindow : Window
         ShowAnswer(a, q);
     }
 
+    /** 截图用：直接摆出一段问答 */
+    public void Demo(string q, string a) => ShowAnswer(a, q);
+
     void ShowAnswer(string text, string question)
     {
         var p = m.Pal;

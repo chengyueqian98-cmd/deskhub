@@ -52,7 +52,7 @@ public class Store
     public string Colors => U.Str(Data["colors"]) ?? "mono";
     public double AlertPct => U.Num(Data["alertPct"]) ?? 3;
     public (string name, double lat, double lon) City =>
-        Data["city"] is JsonObject c && U.Num(c["lat"]) is double lat && U.Num(c["lon"]) is double lon ? (U.Str(c["name"]) ?? "", lat, lon) : WeatherApi.DefaultCity;
+        Data["city"] is JsonObject c && U.Num(c["lat"]) is double lat && U.Num(c["lon"]) is double lon ? (U.Str(c["name"]) ?? "", lat, lon) : (I18n.L(WeatherApi.DefaultCity.name), WeatherApi.DefaultCity.lat, WeatherApi.DefaultCity.lon);
     public JsonNode? Layout => Data["layout"];
     public string ButlerName { get { var n = (U.Str(Data["butlerName"]) ?? "").Trim(); return n == "" ? I18n.L("管家") : n; } }
     public List<string> NewsSources => Data["newsSources"] is JsonArray ? U.Strs(Data["newsSources"]) : News.DefaultIds;

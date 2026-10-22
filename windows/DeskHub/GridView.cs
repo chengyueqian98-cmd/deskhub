@@ -138,8 +138,9 @@ class Card : Border
         var top = UI.H(2,
             Widgets.Configurable.Contains(Item.Type) ? UI.IconButton(G.Settings, p, () => grid.OpenConfig?.Invoke(Item.Id), 13, L("设置")) : null,
             UI.IconButton(G.Close, p, () => grid.Remove(this), 13, L("删掉这个组件")));
-        top.HorizontalAlignment = HorizontalAlignment.Right; top.VerticalAlignment = VerticalAlignment.Top;
-        top.Margin = new Thickness(0, -8, -8, 0);
+        // 底下垫一块，免得压住卡片右上角的字
+        var topBox = new Border { Child = top, Background = p.Window, CornerRadius = new CornerRadius(10), Padding = new Thickness(2, 0, 2, 0),
+            HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(0, -8, -8, 0) };
         var sizes = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(-4, 0, 0, -4) };
         var def = Layouts.Def(Item.Type);
         if (def != null && def.Sizes.Length > 1)
@@ -153,7 +154,7 @@ class Card : Border
                 sizes.Children.Add(chip);
             }
         var g = new Grid { Background = new SolidColorBrush(Color.FromArgb(1, 0, 0, 0)) };   // 整张卡都能抓
-        g.Children.Add(top); g.Children.Add(sizes);
+        g.Children.Add(topBox); g.Children.Add(sizes);
         return g;
     }
 

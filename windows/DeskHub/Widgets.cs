@@ -153,7 +153,8 @@ static class Widgets
         var main = UI.V(0,
             UI.H(10, UI.T(WxGlyph(w.Now.Icon), 30, c.P.Text), UI.T($"{w.Now.Temp}°", 40, c.P.Text, FontWeights.Light, UI.Num)),
             UI.T(L(w.Now.Text) + (today != null ? $"  {today.Max}° / {today.Min}°" : ""), 13, c.P.Text2));
-        if (c.It.Size == "S") return Stack(c, Head(c, "", c.Title(city.name)), main);
+        var cityName = w.City == "" ? city.name : w.City;
+        if (c.It.Size == "S") return Stack(c, Head(c, "", c.Title(cityName)), main);
         var days = new StackPanel { Margin = new Thickness(14, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
         foreach (var d in w.Days.Skip(1).Take(3))
         {
@@ -165,7 +166,7 @@ static class Widgets
         g.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         Grid.SetColumn(days, 1);
         g.Children.Add(main); g.Children.Add(days);
-        return Stack(c, Head(c, "", c.Title(w.City == "" ? city.name : w.City)), g);
+        return Stack(c, Head(c, "", c.Title(cityName)), g);
     }
 
     // —— 行情 ——

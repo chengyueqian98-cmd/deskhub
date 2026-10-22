@@ -42,7 +42,7 @@ static class Snapshot
             ["version"] = DeskGrid.Version,
             ["items"] = new JsonArray(
                 It("countdown", 0, 0, "M"), It("crypto", 0, 1, "M"), It("github", 0, 2, "M"), It("lunar", 0, 3, "S"), It("pomodoro", 1, 3, "S"),
-                It("note", 2, 0, "M"), It("rss", 2, 1, "L"), It("clock", 4, 0, "S"), It("weather", 5, 0, "S"), It("market", 4, 1, "T"),
+                It("note", 2, 0, "M"), It("rss", 2, 1, "L"), It("clock", 4, 0, "S"), It("weather", 5, 0, "S"), It("market", 4, 1, "L"),
                 It("calendar", 6, 0, "T"), It("butler", 6, 3, "M"), It("photo", 2, 3, "W")),
         };
         store.Set("layout", more);
@@ -54,6 +54,21 @@ static class Snapshot
         // 2) 浮层编辑态
         store.Set("layout", full);
         Save(Desk(m, true, true), dir, "3-overlay-edit");
+
+
+        // 浮层（顶栏 + 一段管家回答）
+        {
+            var scr = System.Windows.Forms.Screen.PrimaryScreen ?? System.Windows.Forms.Screen.AllScreens[0];
+            var ov = new OverlayWindow(m, scr, "main");
+            ov.Demo(Strings.En ? "What's on my plate today?" : "我今天有什么事？",
+                Strings.En ? "You have a team sync in 12 minutes, then a dentist appointment tomorrow afternoon. Three to-dos are still open: the lab report is due tomorrow." : "12 分钟后有组会，明天下午看牙。还有 3 件待办没做完，其中实验报告明天截止。");
+            var oc = (UIElement)ov.Content; ov.Content = null;
+            var g = new Grid { Width = 1920, Height = 1080, Background = new LinearGradientBrush(Color.FromRgb(38, 70, 120), Color.FromRgb(160, 110, 150), 35) };
+            g.Children.Add(new Border { Background = m.Pal.Dim });
+            g.Children.Add(oc);
+            Save(g, dir, "3-overlay");
+            ov.Close();
+        }
 
         // 3) Dock
         var dock = new DockWindow(m);
@@ -72,6 +87,7 @@ static class Snapshot
         }
 
         // 5) 引导各页
+        Onboarding.NoAnimation = true;
         for (int i = 0; i < 5; i++)
         {
             var ob = new Onboarding(m);
