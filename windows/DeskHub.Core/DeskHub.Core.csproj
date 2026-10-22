@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- 纯逻辑：布局、解析、管家、多语言。不碰窗口，Mac 上也能编译和跑测试 -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>DeskHub.Core</RootNamespace>
+  </PropertyGroup>
+</Project>

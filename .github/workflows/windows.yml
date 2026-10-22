@@ -1,0 +1,38 @@
+# Windows 版：改了 windows/ 下的代码推上来，就在 GitHub 的 Windows 机器上测试、编译，
+# 安装包放在这次运行的 Artifacts 里（登录 GitHub 后可下载，用来自己先试）。正式发布走 release.yml。
+name: Windows build
+on:
+  push:
+    branches: [main]
+    paths: ["windows/**", ".github/workflows/windows.yml"]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Test and package
+        shell: pwsh
+        run: ./windows/scripts/build.ps1
+      - name: Snapshots
+        shell: pwsh
+        run: |
+          $exe = "$pwd/windows/out/DeskHub/DeskHub.exe"
+          Start-Process $exe -ArgumentList "--snapshot", "$pwd/windows/out/snap/zh" -Wait
+          Start-Process $exe -ArgumentList "--snapshot", "$pwd/windows/out/snap/en-dark", "--lang", "en", "--theme", "dark" -Wait
+          Get-ChildItem windows/out/snap -Recurse | Format-Table FullName, Length
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DeskHub-Windows-snapshots
+          path: windows/out/snap
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DeskHub-Windows
+          path: |
+            windows/out/*.exe
+            windows/out/*.zip
+          retention-days: 30

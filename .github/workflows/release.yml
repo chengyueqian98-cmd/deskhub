@@ -1,5 +1,5 @@
 # 推一个 v 开头的标签（比如 git tag v0.4.0 && git push --tags），GitHub 就会自动跑测试、编译、出安装包、发到 Releases。
-# 公开仓库用 GitHub 的 macOS 机器是免费的。
+# Mac 版（.dmg）和 Windows 版（安装包 + 绿色版 zip）都在这里出。公开仓库用 GitHub 的机器是免费的。
 name: Release
 on:
   push:
@@ -22,3 +22,25 @@ jobs:
         with:
           files: build/DeskHub-*.dmg
           generate_release_notes: true
+
+  windows:
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Test and package
+        shell: pwsh
+        run: |
+          $v = "${{ github.ref_name }}" -replace '^v', ''
+          if ("${{ github.ref_type }}" -ne "tag") { $v = "" }
+          ./windows/scripts/build.ps1 -Version $v
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            windows/out/DeskHub-Windows-*-Setup.exe
+            windows/out/DeskHub-Windows-*-portable.zip

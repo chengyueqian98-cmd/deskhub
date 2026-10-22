@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>DeskHub</AssemblyName>
+    <RootNamespace>DeskHub</RootNamespace>
+    <Version>0.5.0</Version>
+    <Product>DeskHub 桌面信息中心</Product>
+    <Company>Shengyue Qian</Company>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <StartupObject>DeskHub.Program</StartupObject>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../DeskHub.Core/DeskHub.Core.csproj" />
+    <PackageReference Include="MailKit" Version="4.8.0" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
+    <Resource Include="icon.ico" />
+    <Resource Include="icon.png" />
+  </ItemGroup>
+</Project>
