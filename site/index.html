@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>一瞥 Glancedesk · 看一眼 今天的事都在这</title>
+<meta name="description" content="一瞥 Glancedesk：把时间、天气、日程、邮件和行情安静地放在桌面上，只在重要的时候开口。免费开源，支持 Mac 和 Windows。">
+<meta property="og:title" content="一瞥 Glancedesk">
+<meta property="og:description" content="看一眼 今天的事都在这。免费开源的桌面小组件，支持 Mac 和 Windows。">
+<meta property="og:image" content="img/mac-desk.jpg">
+<link rel="icon" href="img/favicon.png">
+<link rel="stylesheet" href="style.css">
+<script>
+  // 先定语言，避免闪一下另一种语言：记住的 > 浏览器语言
+  try { var l = localStorage.getItem('lang'); } catch (e) {}
+  document.documentElement.lang = l || (/^zh/i.test(navigator.language) ? 'zh-CN' : 'en');
+</script>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="brand" href="#"><img src="img/icon.png" alt=""><span data-zh>一瞥</span><span data-en>Glancedesk</span></a>
+    <div class="links">
+      <a href="#features"><span data-zh>功能</span><span data-en>Features</span></a>
+      <a href="#widgets"><span data-zh>组件</span><span data-en>Widgets</span></a>
+      <a href="#windows">Windows</a>
+      <a href="#download"><span data-zh>下载</span><span data-en>Download</span></a>
+      <a href="https://github.com/chengyueqian98-cmd/deskhub">GitHub</a>
+    </div>
+    <button class="lang" id="lang"><span data-zh>English</span><span data-en>中文</span></button>
+  </div>
+</nav>
+
+<header class="hero">
+  <img class="icon" src="img/icon.png" alt="">
+  <h1><span data-zh>一瞥</span><span data-en>Glancedesk</span></h1>
+  <p class="tag"><span data-zh>看一眼 今天的事都在这</span><span data-en>One glance. Your whole day.</span></p>
+  <p class="sub"><span data-zh>安静地待在桌面图标后面 只在重要的时候开口</span><span data-en>It sits quietly behind your desktop icons and only speaks up when it matters.</span></p>
+  <div class="cta" id="cta">
+    <a class="btn primary" data-dl="mac" href="https://github.com/chengyueqian98-cmd/deskhub/releases/latest"><span data-zh>下载 Mac 版</span><span data-en>Download for Mac</span></a>
+    <a class="btn ghost" data-dl="win" href="https://github.com/chengyueqian98-cmd/deskhub/releases/latest"><span data-zh>下载 Windows 版</span><span data-en>Download for Windows</span></a>
+  </div>
+  <p class="meta"><span data-zh>免费 · 开源 · 没有账号</span><span data-en>Free · Open source · No account</span> <span id="ver"></span></p>
+  <div class="shot">
+    <img data-zh src="img/mac-desk.jpg" alt="一瞥的桌面" width="1600" height="1039">
+    <img data-en src="img/mac-desk-en-cards.jpg" alt="Glancedesk on the desktop" width="1600" height="1039">
+  </div>
+</header>
+
+<section id="features">
+  <div class="wrap">
+    <div class="head">
+      <h2><span data-zh>不打扰 才是最好的提醒</span><span data-en>The best reminder doesn't interrupt.</span></h2>
+    </div>
+    <div class="grid3">
+      <div class="card">
+        <h3><span data-zh>就在壁纸上</span><span data-en>Right on your wallpaper</span></h3>
+        <p><span data-zh>时钟、天气、日程、邮件铺在桌面两侧 中间留给你 不挡任何窗口</span><span data-en>Clock, weather, calendar and mail line both sides of your desktop and never cover a window.</span></p>
+      </div>
+      <div class="card">
+        <h3><span data-zh>按一下就出来</span><span data-en>One keystroke away</span></h3>
+        <p><span data-zh><span class="kbd">⌃⌥空格</span> 或 <span class="kbd">Ctrl+Alt+空格</span> 呼出浮层 组件能点 能拖动 能问管家</span><span data-en>Press <span class="kbd">⌃⌥Space</span> or <span class="kbd">Ctrl+Alt+Space</span> to tap widgets, rearrange them and ask your butler.</span></p>
+      </div>
+      <div class="card">
+        <h3><span data-zh>管家只说要紧的</span><span data-en>A butler that knows what matters</span></h3>
+        <p><span data-zh>马上开始的会、重要的人来信、今天要带伞 其余的安静挂着</span><span data-en>The meeting about to start, mail from people who matter, rain today. Everything else just waits.</span></p>
+      </div>
+    </div>
+
+    <div class="split" style="margin-top:20px">
+      <div>
+        <h3><span data-zh>想问就问</span><span data-en>Just ask</span></h3>
+        <p><span data-zh>浮层顶部可以直接问管家「我今天有什么事」 也能让它概括一封邮件 填上自己的 DeepSeek Key 就能用</span><span data-en>Ask "what's on today?" right from the overlay, or have it summarize an email. Bring your own DeepSeek key.</span></p>
+      </div>
+      <div>
+        <img data-zh src="img/win-overlay.jpg" alt="浮层" loading="lazy">
+        <img data-en src="img/win-overlay-en.jpg" alt="Overlay" loading="lazy">
+      </div>
+    </div>
+    <div class="split">
+      <div>
+        <h3><span data-zh>邮箱和日历 随你选</span><span data-en>Your mail. Your calendars.</span></h3>
+        <p><span data-zh>Gmail、Outlook、iCloud、QQ、163 都能连 只读不写 日历可以订阅 Google 和 Outlook 也能用 Mac 自带的日历</span><span data-en>Gmail, Outlook, iCloud and any IMAP mailbox, read-only. Subscribe to Google or Outlook calendars, or use the Mac's own.</span></p>
+      </div>
+      <div>
+        <img data-zh src="img/win-mail.jpg" alt="邮件设置" loading="lazy">
+        <img data-en src="img/win-mail-en.jpg" alt="Mail settings" loading="lazy">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="widgets">
+  <div class="wrap">
+    <div class="big">21</div>
+    <div class="head" style="margin-top:12px">
+      <h2><span data-zh>种组件 想摆几个摆几个</span><span data-en>widgets. Add as many as you like.</span></h2>
+      <p><span data-zh>像手机小组件那样分大中小 拖动吸附 自动让位 同一种可以加好几个 各看各的</span><span data-en>Small, medium and large sizes that snap into place. Add two stock widgets, one for each market.</span></p>
+    </div>
+    <div class="widgets" data-zh>
+      <span>时钟</span><span>管家</span><span>天气</span><span>日历</span><span>邮件</span><span>待办</span><span>行情</span><span>新闻</span><span>订阅</span><span>世界时钟</span><span>倒数日</span><span>加密货币</span><span>GitHub</span><span>照片</span><span>番茄钟</span><span>系统状态</span><span>便签</span><span>汇率</span><span>农历节日</span><span>正在播放</span><span>风控</span>
+    </div>
+    <div class="widgets" data-en>
+      <span>Clock</span><span>Butler</span><span>Weather</span><span>Calendar</span><span>Mail</span><span>To-dos</span><span>Stocks</span><span>News</span><span>RSS</span><span>World Clock</span><span>Countdown</span><span>Crypto</span><span>GitHub</span><span>Photos</span><span>Focus Timer</span><span>System</span><span>Note</span><span>Exchange Rates</span><span>Lunar Calendar</span><span>Now Playing</span><span>Risk</span>
+    </div>
+  </div>
+</section>
+
+<section id="windows">
+  <div class="wrap">
+    <div class="head">
+      <h2><span data-zh>Windows 上 还多了 Dock</span><span data-en>On Windows, there's a Dock too.</span></h2>
+      <p><span data-zh>常用的应用和文件放在底部 下载文件夹点开是一叠最近的文件 不用时收成一条细线</span><span data-en>Your apps and files at the bottom, a Downloads stack, and it folds into a thin line when you don't need it.</span></p>
+    </div>
+    <div class="split">
+      <div>
+        <h3><span data-zh>一键清空桌面</span><span data-en>A clean desktop, in one switch</span></h3>
+        <p><span data-zh>桌面图标先藏起来 只留壁纸和组件 关掉开关就回来 文件一个不动</span><span data-en>Hide desktop icons and keep only your wallpaper and widgets. Turn it off and everything's back, untouched.</span></p>
+      </div>
+      <div>
+        <img data-zh src="img/win-dock.png" alt="Dock" loading="lazy">
+        <img data-en src="img/win-dock-en.png" alt="Dock" loading="lazy">
+      </div>
+    </div>
+    <div class="shot" style="margin-top:20px;width:100%">
+      <img data-zh src="img/win-desk.jpg" alt="Windows 上的一瞥" loading="lazy">
+      <img data-en src="img/win-desk-en.jpg" alt="Glancedesk on Windows" loading="lazy">
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="head">
+      <h2><span data-zh>你的数据 只在你的电脑上</span><span data-en>Your data stays on your computer.</span></h2>
+    </div>
+    <div class="grid3">
+      <div class="card"><h3><span data-zh>没有账号</span><span data-en>No account</span></h3><p><span data-zh>不用注册 没有服务器 不收集任何数据</span><span data-en>No sign-up, no server, no tracking.</span></p></div>
+      <div class="card"><h3><span data-zh>只读</span><span data-en>Read-only</span></h3><p><span data-zh>日历和邮件只看不改 不会标成已读 也不会删除或发送</span><span data-en>Calendars and mail are never changed, marked read, deleted or sent.</span></p></div>
+      <div class="card"><h3><span data-zh>开源</span><span data-en>Open source</span></h3><p><span data-zh>代码全部公开在 GitHub 上 MIT 许可</span><span data-en>Every line is on GitHub under the MIT license.</span></p></div>
+    </div>
+  </div>
+</section>
+
+<section id="download">
+  <div class="wrap">
+    <div class="head">
+      <h2><span data-zh>免费下载</span><span data-en>Free download</span></h2>
+    </div>
+    <div class="dl">
+      <div class="card">
+        <h3>Mac</h3>
+        <p class="req"><span data-zh>macOS 14 或更新 · Apple 芯片</span><span data-en>macOS 14 or later · Apple silicon</span></p>
+        <a class="btn primary" data-dl="mac" href="https://github.com/chengyueqian98-cmd/deskhub/releases/latest"><span data-zh>下载 Mac 版</span><span data-en>Download for Mac</span></a>
+      </div>
+      <div class="card">
+        <h3>Windows</h3>
+        <p class="req"><span data-zh>Windows 10 或 11 · 64 位</span><span data-en>Windows 10 or 11 · 64-bit</span></p>
+        <a class="btn primary" data-dl="win" href="https://github.com/chengyueqian98-cmd/deskhub/releases/latest"><span data-zh>下载 Windows 版</span><span data-en>Download for Windows</span></a>
+      </div>
+    </div>
+    <div class="tips">
+      <details>
+        <summary><span data-zh>Mac 第一次打开被拦下怎么办</span><span data-en>macOS won't open it the first time</span></summary>
+        <p><span data-zh>打开「系统设置 → 隐私与安全性」 拉到最下面点「仍要打开」 之后就不会再问了 这是因为一瞥没有付费的 Apple 开发者签名</span><span data-en>Open System Settings → Privacy &amp; Security, scroll down and click "Open Anyway". You'll only need to do this once; Glancedesk isn't signed with a paid Apple Developer ID.</span></p>
+      </details>
+      <details>
+        <summary><span data-zh>Windows 弹出「已保护你的电脑」</span><span data-en>Windows says "Windows protected your PC"</span></summary>
+        <p><span data-zh>点「更多信息」 再点「仍要运行」 不想安装可以下载绿色版 zip 解压就能用</span><span data-en>Click "More info", then "Run anyway". Prefer not to install? Grab the portable zip and run it directly.</span></p>
+      </details>
+      <details>
+        <summary><span data-zh>要花钱吗</span><span data-en>Does it cost anything?</span></summary>
+        <p><span data-zh>不要 一瞥完全免费 只有问管家用到的 DeepSeek 按它自己的价格收费 不填 Key 也能正常用其他功能</span><span data-en>No. Glancedesk is free. Only the optional AI uses your own DeepSeek key, billed by DeepSeek. Everything else works without it.</span></p>
+      </details>
+      <details>
+        <summary><span data-zh>行情能用来炒股吗</span><span data-en>Can I trade with the stock widget?</span></summary>
+        <p><span data-zh>行情来自公开接口 有延迟 只做展示和提醒 不构成任何投资建议 也不会替你下单</span><span data-en>Market data comes from public APIs, is delayed, and is for display only. It's not investment advice and never places orders.</span></p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span><span data-zh>一瞥 Glancedesk · MIT 开源 · 不构成投资建议</span><span data-en>Glancedesk · MIT licensed · Not investment advice</span></span>
+    <span><a href="https://github.com/chengyueqian98-cmd/deskhub">GitHub</a> · <a href="https://github.com/chengyueqian98-cmd/deskhub/issues"><span data-zh>反馈问题</span><span data-en>Feedback</span></a> · <a href="https://github.com/chengyueqian98-cmd/deskhub/releases"><span data-zh>所有版本</span><span data-en>All releases</span></a></span>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
