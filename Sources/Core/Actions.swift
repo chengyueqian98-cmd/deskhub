@@ -56,7 +56,7 @@ enum Actions {
       "- setting {key:\"colors|butlerName|aiAgent|deepseekModel\", value}：改外观 / 名字 / 用哪个 AI",
       "- refresh {what:\"\(refreshable.joined(separator: "|"))\"}：刷新数据；mail.digest {}：读几封重要邮件的正文并概括；open.url {url:\"https://…\"}：打开网页",
       "我会先看到确认卡，点了才执行。你不能、也不要：下单、给买入卖出持有的建议、发送 / 回复 / 删除邮件、改日历、改量化系统。",
-    ].joined(separator: "\n")
+    ].joined(separator: "\n") + (appLang == "en" ? "\n(The user reads English: write your reply in English; the actions block format stays the same.)" : "")
   }
 
   // —— 从回复里取出 actions 块 ——
@@ -71,9 +71,9 @@ enum Actions {
     // 只认第一块；后面再出现的 actions 块一律丢掉（别让一次回复偷偷带两批）
     let text = (String(reply[..<r.lowerBound]) + String(reply[r.upperBound...])).replace("```actions[\\s\\S]*?(```|$)", "").trimmingTrailing()
     guard let data = m[1]?.trimmed().data(using: .utf8), let any = try? JSONSerialization.jsonObject(with: data) else {
-      return (text, nil, "没能看懂模型给的操作列表（格式不对）")
+      return (text, nil, L("没能看懂模型给的操作列表（格式不对）"))
     }
-    guard let arr = any as? [Any] else { return (text, nil, "actions 不是数组") }
+    guard let arr = any as? [Any] else { return (text, nil, L("actions 不是数组")) }
     return (text, arr, nil)
   }
 
@@ -115,83 +115,83 @@ enum Actions {
   }
 
   static func check(_ raw: Any?) -> ActionCheck {
-    guard let o = raw as? JSON else { return ActionCheck(error: "不是一个操作") }
+    guard let o = raw as? JSON else { return ActionCheck(error: L("不是一个操作")) }
     let d = o["do"] as? String ?? ""
     func bad(_ e: String) -> ActionCheck { ActionCheck(error: e) }
     func ok(_ p: [String: String], days: [Int] = [], enabled: Bool? = nil) -> ActionCheck { ActionCheck(action: Action(kind: d, p: p, days: days, enabled: enabled)) }
     switch d {
     case "watch.add", "watch.remove":
-      guard let q = s(o["query"], 40) else { return bad("缺少要操作的品种名称或代码") }
+      guard let q = s(o["query"], 40) else { return bad(L("缺少要操作的品种名称或代码")) }
       return ok(["query": q])
     case "plan.set":
-      guard let q = s(o["query"], 40) else { return bad("缺少品种") }
+      guard let q = s(o["query"], 40) else { return bad(L("缺少品种")) }
       let buy = o["buy"] == nil ? nil : pos(o["buy"]), sell = o["sell"] == nil ? nil : pos(o["sell"])
-      if o["buy"] != nil && buy == nil { return bad("买入价不是有效的数字") }
-      if o["sell"] != nil && sell == nil { return bad("卖出价不是有效的数字") }
+      if o["buy"] != nil && buy == nil { return bad(L("买入价不是有效的数字")) }
+      if o["sell"] != nil && sell == nil { return bad(L("卖出价不是有效的数字")) }
       let note = (o["note"] as? String).map { String($0.trimmed().prefix(80)) }
-      if o["note"] != nil && note == nil { return bad("观察不是文字") }
-      if buy == nil && sell == nil && note == nil { return bad("没有要记的内容（买入价、卖出价、观察至少一个）") }
+      if o["note"] != nil && note == nil { return bad(L("观察不是文字")) }
+      if buy == nil && sell == nil && note == nil { return bad(L("没有要记的内容（买入价、卖出价、观察至少一个）")) }
       var p = ["query": q]
       if let buy { p["buy"] = jsNum(buy) }
       if let sell { p["sell"] = jsNum(sell) }
       if let note { p["note"] = note }
       return ok(p)
     case "alert.price":
-      guard let q = s(o["query"], 40) else { return bad("缺少品种") }
+      guard let q = s(o["query"], 40) else { return bad(L("缺少品种")) }
       let above = o["above"] == nil ? nil : pos(o["above"]), below = o["below"] == nil ? nil : pos(o["below"])
-      if (o["above"] != nil && above == nil) || (o["below"] != nil && below == nil) { return bad("价格不是有效的数字") }
-      if above == nil && below == nil { return bad("高于 / 低于至少填一个") }
+      if (o["above"] != nil && above == nil) || (o["below"] != nil && below == nil) { return bad(L("价格不是有效的数字")) }
+      if above == nil && below == nil { return bad(L("高于 / 低于至少填一个")) }
       var p = ["query": q]
       if let above { p["above"] = jsNum(above) }
       if let below { p["below"] = jsNum(below) }
       return ok(p)
     case "alert.pct":
-      guard let v = n(o["value"]), v >= 0, v <= 20 else { return bad("涨跌幅阈值要在 0–20 之间") }
+      guard let v = n(o["value"]), v >= 0, v <= 20 else { return bad(L("涨跌幅阈值要在 0–20 之间")) }
       return ok(["value": jsNum(v)])
     case "reminder.add":
-      guard let title = s(o["title"], 40) else { return bad("提醒缺少标题") }
-      guard let time = normTime(o["time"]) else { return bad("提醒时间要写成 HH:MM") }
-      guard let days = normDays(o["days"]) else { return bad("提醒的星期不对") }
+      guard let title = s(o["title"], 40) else { return bad(L("提醒缺少标题")) }
+      guard let time = normTime(o["time"]) else { return bad(L("提醒时间要写成 HH:MM")) }
+      guard let days = normDays(o["days"]) else { return bad(L("提醒的星期不对")) }
       var prompt = ""
       if let pr = o["prompt"], !(pr is NSNull) {
-        guard let t = pr as? String else { return bad("提醒的 AI 指令不对") }
+        guard let t = pr as? String else { return bad(L("提醒的 AI 指令不对")) }
         prompt = String(t.trimmed().prefix(300))
       }
       return ok(["title": title, "time": time, "prompt": prompt], days: days)
     case "reminder.remove":
-      guard let t = s(o["title"], 40) else { return bad("缺少提醒标题") }
+      guard let t = s(o["title"], 40) else { return bad(L("缺少提醒标题")) }
       return ok(["title": t])
     case "reminder.toggle":
-      guard let t = s(o["title"], 40), let e = o["enabled"] as? NSNumber, CFGetTypeID(e) == CFBooleanGetTypeID() else { return bad("缺少提醒标题或 enabled") }
+      guard let t = s(o["title"], 40), let e = o["enabled"] as? NSNumber, CFGetTypeID(e) == CFBooleanGetTypeID() else { return bad(L("缺少提醒标题或 enabled")) }
       return ok(["title": t], enabled: e.boolValue)
     case "nav":
-      guard let p = o["page"] as? String, pages.contains(p) else { return bad("没有这一页") }
+      guard let p = o["page"] as? String, pages.contains(p) else { return bad(L("没有这一页")) }
       return ok(["page": p])
     case "widget.show", "widget.hide":
-      guard let id = o["id"] as? String, widgetDef(id) != nil else { return bad("没有这个组件") }
+      guard let id = o["id"] as? String, widgetDef(id) != nil else { return bad(L("没有这个组件")) }
       return ok(["id": id])
     case "widget.size":
-      guard let id = o["id"] as? String, let def = widgetDef(id) else { return bad("没有这个组件") }
-      guard let size = o["size"] as? String, def.sizes.contains(size) else { return bad("「\(def.label)」没有这个大小（可选：\(def.sizes.joined(separator: " / "))）") }
+      guard let id = o["id"] as? String, let def = widgetDef(id) else { return bad(L("没有这个组件")) }
+      guard let size = o["size"] as? String, def.sizes.contains(size) else { return bad(L("「%@」没有这个大小（可选：%@）", def.name, def.sizes.joined(separator: " / "))) }
       return ok(["id": id, "size": size])
     case "setting":
-      guard let key = o["key"] as? String, let spec = settings[key] else { return bad("这个设置不能由管家来改") }
+      guard let key = o["key"] as? String, let spec = settings[key] else { return bad(L("这个设置不能由管家来改")) }
       if let values = spec.values {
-        guard let v = o["value"] as? String, values.contains(v) else { return bad("「\(spec.label)」不能设成这个值") }
+        guard let v = o["value"] as? String, values.contains(v) else { return bad(L("「%@」不能设成这个值", L(spec.label))) }
         return ok(["key": key, "value": v])
       }
-      guard let v = s(o["value"], spec.text ?? 20) else { return bad("「\(spec.label)」不能为空，最多 \(spec.text ?? 20) 个字") }
+      guard let v = s(o["value"], spec.text ?? 20) else { return bad(L("「%@」不能为空，最多 %@ 个字", L(spec.label), "\(spec.text ?? 20)")) }
       return ok(["key": key, "value": v])
     case "refresh":
-      guard let w = o["what"] as? String, refreshable.contains(w) else { return bad("不能刷新这个") }
+      guard let w = o["what"] as? String, refreshable.contains(w) else { return bad(L("不能刷新这个")) }
       return ok(["what": w])
     case "mail.digest":
       return ok([:])
     case "open.url":
-      guard let u = s(o["url"], 300), URL(string: u)?.scheme == "https", URL(string: u)?.host != nil else { return bad("只能打开 https 链接") }
+      guard let u = s(o["url"], 300), URL(string: u)?.scheme == "https", URL(string: u)?.host != nil else { return bad(L("只能打开 https 链接")) }
       return ok(["url": u])
     default:
-      return bad("不支持这个操作")
+      return bad(L("不支持这个操作"))
     }
   }
 
@@ -199,47 +199,47 @@ enum Actions {
   static func checkAll(_ raw: [Any]?) -> [ActionCheck] {
     let list = raw ?? []
     var out = list.prefix(maxActions).map(check)
-    if list.count > maxActions { out.append(ActionCheck(error: "一次最多 \(maxActions) 件，多出来的 \(list.count - maxActions) 件没有列出")) }
+    if list.count > maxActions { out.append(ActionCheck(error: L("一次最多 %@ 件，多出来的 %@ 件没有列出", "\(maxActions)", "\(list.count - maxActions)"))) }
     return out
   }
 
   // —— 确认卡上的说明：全部由这里根据校验后的参数生成 ——
   private static let dayName = ["", "周一", "周二", "周三", "周四", "周五", "周六", "周日"]
   static func daysText(_ d: [Int]) -> String {
-    if d.isEmpty { return "每天" }
-    if d == [1, 2, 3, 4, 5] { return "工作日" }
-    if d == [6, 7] { return "周末" }
-    return d.map { dayName[$0] }.joined(separator: "、")
+    if d.isEmpty { return L("每天") }
+    if d == [1, 2, 3, 4, 5] { return L("工作日") }
+    if d == [6, 7] { return L("周末") }
+    return d.map { L(dayName[$0]) }.joined(separator: appLang == "en" ? ", " : "、")
   }
 
   static func describe(_ a: Action) -> String {
     let p = a.p
     switch a.kind {
-    case "watch.add": return "把「\(p["query"]!)」加入自选"
-    case "watch.remove": return "把「\(p["query"]!)」从自选移除"
+    case "watch.add": return L("把「%@」加入自选", p["query"]!)
+    case "watch.remove": return L("把「%@」从自选移除", p["query"]!)
     case "plan.set":
-      let bits = [p["buy"].map { "买入价 \($0)" }, p["sell"].map { "卖出价 \($0)" }, p["note"].map { "观察「\($0)」" }].compactMap { $0 }
-      return "给「\(p["query"]!)」记下：\(bits.joined(separator: "、"))（只是记下，不会下单）"
+      let bits = [p["buy"].map { L("买入价 %@", $0) }, p["sell"].map { L("卖出价 %@", $0) }, p["note"].map { L("观察「%@」", $0) }].compactMap { $0 }
+      return L("给「%@」记下：%@（只是记下，不会下单）", p["query"]!, bits.joined(separator: appLang == "en" ? ", " : "、"))
     case "alert.price":
-      let bits = [p["above"].map { "高于 \($0)" }, p["below"].map { "低于 \($0)" }].compactMap { $0 }
-      return "「\(p["query"]!)」\(bits.joined(separator: "、"))时提醒我"
-    case "alert.pct": return p["value"] == "0" ? "关闭涨跌幅通知" : "涨跌幅超过 \(p["value"]!)% 时通知我"
+      let bits = [p["above"].map { L("高于 %@", $0) }, p["below"].map { L("低于 %@", $0) }].compactMap { $0 }
+      return L("「%@」%@时提醒我", p["query"]!, bits.joined(separator: appLang == "en" ? " or " : "、"))
+    case "alert.pct": return p["value"] == "0" ? L("关闭涨跌幅通知") : L("涨跌幅超过 %@%% 时通知我", p["value"]!)
     case "reminder.add":
       let pr = p["prompt"] ?? ""
-      return "新建提醒：\(daysText(a.days)) \(p["time"]!)「\(p["title"]!)」" + (pr.isEmpty ? "" : "（到点让 AI：\(pr.prefix(40))\(pr.count > 40 ? "…" : "")）")
-    case "reminder.remove": return "删除提醒「\(p["title"]!)」"
-    case "reminder.toggle": return "\(a.enabled == true ? "开启" : "关闭")提醒「\(p["title"]!)」"
-    case "nav": return "切到「\(pageName[p["page"]!] ?? "")」页"
-    case "widget.show": return "在桌面上显示「\(widgetDef(p["id"]!)!.label)」"
-    case "widget.hide": return "把「\(widgetDef(p["id"]!)!.label)」从桌面上收起"
-    case "widget.size": return "把「\(widgetDef(p["id"]!)!.label)」换成「\(SIZES[p["size"]!]?.label ?? p["size"]!)」档大小"
+      return L("新建提醒：%@ %@「%@」", daysText(a.days), p["time"]!, p["title"]!) + (pr.isEmpty ? "" : L("（到点让 AI：%@）", String(pr.prefix(40)) + (pr.count > 40 ? "…" : "")))
+    case "reminder.remove": return L("删除提醒「%@」", p["title"]!)
+    case "reminder.toggle": return a.enabled == true ? L("开启提醒「%@」", p["title"]!) : L("关闭提醒「%@」", p["title"]!)
+    case "nav": return L("切到「%@」页", L(pageName[p["page"]!] ?? ""))
+    case "widget.show": return L("在桌面上显示「%@」", widgetDef(p["id"]!)!.name)
+    case "widget.hide": return L("把「%@」从桌面上收起", widgetDef(p["id"]!)!.name)
+    case "widget.size": return L("把「%@」换成「%@」档大小", widgetDef(p["id"]!)!.name, L(SIZES[p["size"]!]?.label ?? p["size"]!))
     case "setting":
       let s = settings[p["key"]!]!
-      return "把\(s.label)改成「\(s.show[p["value"]!] ?? p["value"]!)」"
-    case "refresh": return "刷新" + (["news": "新闻", "market": "行情", "mail": "邮件", "weather": "天气", "calendar": "日程"][p["what"]!] ?? "")
-    case "mail.digest": return "读几封重要邮件的正文，让管家概括（正文会发给你选的 AI）"
-    case "open.url": return "在浏览器里打开 \(p["url"]!)"
-    default: return "（未知操作）"
+      return L("把%@改成「%@」", L(s.label), L(s.show[p["value"]!] ?? p["value"]!))
+    case "refresh": return L("刷新%@", L(["news": "新闻", "market": "行情", "mail": "邮件", "weather": "天气", "calendar": "日程"][p["what"]!] ?? ""))
+    case "mail.digest": return L("读几封重要邮件的正文，让管家概括（正文会发给你选的 AI）")
+    case "open.url": return L("在浏览器里打开 %@", p["url"]!)
+    default: return L("（未知操作）")
     }
   }
 
@@ -252,8 +252,8 @@ enum Actions {
     let exact = watch.filter { k in [k, quotes[k]?.code, quotes[k]?.name].contains { norm($0) == q } }
     let found = exact.isEmpty ? watch.filter { k in norm(quotes[k]?.name).contains(q) || norm(quotes[k]?.code).contains(q) } : exact
     if found.count == 1 { return (found[0], nil) }
-    if found.isEmpty { return (nil, "自选里没有「\(query)」（先让我把它加进自选）") }
-    return (nil, "「\(query)」在自选里对应不止一个品种，说得具体一点")
+    if found.isEmpty { return (nil, L("自选里没有「%@」（先让我把它加进自选）", query)) }
+    return (nil, L("「%@」在自选里对应不止一个品种，说得具体一点", query))
   }
 
   private static func findReminder(_ list: [JSON], _ title: String) -> (r: JSON?, error: String?) {
@@ -261,7 +261,7 @@ enum Actions {
     let exact = list.filter { norm($0["title"] as? String) == t }
     let found = exact.isEmpty ? list.filter { norm($0["title"] as? String).contains(t) } : exact
     if found.count == 1 { return (found[0], nil) }
-    return (nil, found.isEmpty ? "没有叫「\(title)」的提醒" : "有好几条提醒都叫类似「\(title)」的名字，说得具体一点")
+    return (nil, found.isEmpty ? L("没有叫「%@」的提醒", title) : L("有好几条提醒都叫类似「%@」的名字，说得具体一点", title))
   }
 
   /** 返回要写回设置的修改和一句结果；做不了就返回错误。异步类动作（asyncActions）不在这里 */
@@ -275,7 +275,7 @@ enum Actions {
       guard let key = f.key else { return (nil, nil, f.error) }
       var plans = store["plans"] as? JSON ?? [:]
       plans[key] = nil
-      return (["watch": watch.filter { $0 != key }, "plans": plans], "已移除「\(p["query"]!)」", nil)
+      return (["watch": watch.filter { $0 != key }, "plans": plans], L("已移除「%@」", p["query"]!), nil)
     case "plan.set":
       let f = findWatch(watch, quotes, p["query"]!)
       guard let key = f.key else { return (nil, nil, f.error) }
@@ -285,7 +285,7 @@ enum Actions {
       if let s = a.num("sell") { cur["sell"] = s }
       if let n = p["note"] { cur["note"] = n }
       plans[key] = cur
-      return (["plans": plans], "已记下「\(p["query"]!)」的计划", nil)
+      return (["plans": plans], L("已记下「%@」的计划", p["query"]!), nil)
     case "alert.price":
       let f = findWatch(watch, quotes, p["query"]!)
       guard let key = f.key else { return (nil, nil, f.error) }
@@ -294,30 +294,30 @@ enum Actions {
       if let x = a.num("above") { v["above"] = x }
       if let x = a.num("below") { v["below"] = x }
       all[key] = v
-      return (["priceAlerts": all], "已设好「\(p["query"]!)」的价格提醒", nil)
+      return (["priceAlerts": all], L("已设好「%@」的价格提醒", p["query"]!), nil)
     case "alert.pct":
       let v = a.num("value") ?? 0
-      return (["alertPct": v], v == 0 ? "已关闭涨跌幅通知" : "涨跌幅超过 \(jsNum(v))% 会通知你", nil)
+      return (["alertPct": v], v == 0 ? L("已关闭涨跌幅通知") : L("涨跌幅超过 %@%% 会通知你", jsNum(v)), nil)
     case "reminder.add":
       let hasPrompt = !(p["prompt"] ?? "").isEmpty
       let r = Reminders.new(title: p["title"]!, time: p["time"]!, days: a.days, prompt: p["prompt"] ?? "",
                             context: ["calendar": hasPrompt, "mail": hasPrompt, "market": false, "quant": false])
-      return (["reminders": reminders + [r]], "已新建提醒「\(p["title"]!)」", nil)
+      return (["reminders": reminders + [r]], L("已新建提醒「%@」", p["title"]!), nil)
     case "reminder.remove":
       let f = findReminder(reminders, p["title"]!)
       guard let r = f.r, let id = r["id"] as? String else { return (nil, nil, f.error) }
-      return (["reminders": reminders.filter { $0["id"] as? String != id }], "已删除提醒「\(r["title"] as? String ?? "")」", nil)
+      return (["reminders": reminders.filter { $0["id"] as? String != id }], L("已删除提醒「%@」", r["title"] as? String ?? ""), nil)
     case "reminder.toggle":
       let f = findReminder(reminders, p["title"]!)
       guard let r = f.r, let id = r["id"] as? String else { return (nil, nil, f.error) }
       let on = a.enabled == true
       return (["reminders": reminders.map { x in var y = x; if y["id"] as? String == id { y["enabled"] = on }; return y }],
-              "已\(on ? "开启" : "关闭")提醒「\(r["title"] as? String ?? "")」", nil)
-    case "widget.show": return (["layout": toggle(store["layout"], p["id"]!, true).json], "已显示「\(widgetDef(p["id"]!)!.label)」", nil)
-    case "widget.hide": return (["layout": toggle(store["layout"], p["id"]!, false).json], "已收起「\(widgetDef(p["id"]!)!.label)」", nil)
-    case "widget.size": return (["layout": setSize(store["layout"], p["id"]!, p["size"]!).json], "已调整「\(widgetDef(p["id"]!)!.label)」的大小", nil)
-    case "setting": return ([p["key"]!: p["value"]!], "已把\(settings[p["key"]!]!.label)改好", nil)
-    default: return (nil, nil, "这个操作需要联网或界面配合，不能直接生成修改")
+              (on ? L("已开启提醒「%@」", r["title"] as? String ?? "") : L("已关闭提醒「%@」", r["title"] as? String ?? "")), nil)
+    case "widget.show": return (["layout": toggle(store["layout"], p["id"]!, true).json], L("已显示「%@」", widgetDef(p["id"]!)!.name), nil)
+    case "widget.hide": return (["layout": toggle(store["layout"], p["id"]!, false).json], L("已收起「%@」", widgetDef(p["id"]!)!.name), nil)
+    case "widget.size": return (["layout": setSize(store["layout"], p["id"]!, p["size"]!).json], L("已调整「%@」的大小", widgetDef(p["id"]!)!.name), nil)
+    case "setting": return ([p["key"]!: p["value"]!], L("已把%@改好", L(settings[p["key"]!]!.label)), nil)
+    default: return (nil, nil, L("这个操作需要联网或界面配合，不能直接生成修改"))
     }
   }
 }

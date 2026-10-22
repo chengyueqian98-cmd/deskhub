@@ -183,12 +183,12 @@ struct ActionCard: View {
             Task {
               let r = await model.runActions(todo, chat: chat)
               chat.pending?.results = r
-              chat.items.append(TItem(kind: .notice, text: "已执行 \(r.filter(\.ok).count) / \(r.count) 件"))
+              chat.items.append(TItem(kind: .notice, text: L("已执行 %@ / %@ 件", "\(r.filter(\.ok).count)", "\(r.count)")))
             }
           } label: {
             Text(L("执行")).font(Font2.ui(12, .semibold)).foregroundStyle(.white).padding(.horizontal, 14).padding(.vertical, 5).background(Capsule().fill(pal.accent))
           }.buttonStyle(.plain).disabled(pending.running)
-          Button(L("取消")) { chat.pending = nil; chat.items.append(TItem(kind: .notice, text: "已取消，什么都没做")) }.buttonStyle(PillButton())
+          Button(L("取消")) { chat.pending = nil; chat.items.append(TItem(kind: .notice, text: L("已取消，什么都没做"))) }.buttonStyle(PillButton())
         } else {
           Button(L("知道了")) { chat.pending = nil }.buttonStyle(MiniButton())
         }
@@ -219,7 +219,7 @@ struct MailPanel: View {
           Button {
             guard case .ok(let n, let e, let s, let b) = state else { return }
             model.mailOpen = nil
-            model.overlayChat.send(shown: "概括邮件：\(s)", prompt: DeskModel.askOne + "\n\n" + DeskModel.mailPrompt(n, e, s, b), model: model.deepseekModel)
+            model.overlayChat.send(shown: L("概括邮件：") + s, prompt: DeskModel.askOne + (appLang == "en" ? " Please answer in English." : "") + "\n\n" + DeskModel.mailPrompt(n, e, s, b), model: model.deepseekModel)
           } label: {
             Text(L("让%@概括", model.store.butlerName)).font(Font2.ui(12, .semibold)).foregroundStyle(.white).padding(.horizontal, 14).padding(.vertical, 5).background(Capsule().fill(pal.accent))
           }.buttonStyle(.plain).disabled(!isOk)
@@ -230,7 +230,7 @@ struct MailPanel: View {
         case nil: Text(L("正在读取正文…")).font(Font2.ui(12.5)).foregroundStyle(pal.text3)
         case .failed(let e): Text(e).font(Font2.ui(12.5)).foregroundStyle(pal.orange)
         case .ok(_, _, _, let body):
-          Text(body.isEmpty ? "（没有正文）" : body).font(Font2.ui(13)).foregroundStyle(pal.text2).lineSpacing(3).textSelection(.enabled)
+          Text(body.isEmpty ? L("（没有正文）") : body).font(Font2.ui(13)).foregroundStyle(pal.text2).lineSpacing(3).textSelection(.enabled)
         }
       }
     }
@@ -240,7 +240,7 @@ struct MailPanel: View {
   private var isOk: Bool { if case .ok = state { return true }; return false }
   private func subject(_ m: MailItem?) -> String {
     if case .ok(_, _, let s, _) = state { return s }
-    return m?.subject ?? "（无主题）"
+    return m?.subject ?? L("（无主题）")
   }
 }
 

@@ -31,6 +31,7 @@ miscTests()
 batteryNotChargingTest()
 aiTests()
 extraTests()
+updateTests()
 
 print("通过 \(passed) 项，失败 \(failed.count) 项")
 for f in failed { print(f) }

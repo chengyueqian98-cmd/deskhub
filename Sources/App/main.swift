@@ -79,10 +79,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let old = NSRunningApplication.runningApplications(withBundleIdentifier: "com.qianshengyue.desktophub")
     guard !old.isEmpty else { return }
     let a = NSAlert()
-    a.messageText = "旧版桌面信息中心正在运行"
-    a.informativeText = "两个版本同时开会出现两层桌面，快捷键也只能给一个。要退出旧版吗？（旧版的设置、布局、自选都在，原生版直接接着用）"
-    a.addButton(withTitle: "退出旧版")
-    a.addButton(withTitle: "都留着")
+    a.messageText = L("旧版桌面信息中心正在运行")
+    a.informativeText = L("两个版本同时开会出现两层桌面，快捷键也只能给一个。要退出旧版吗？（旧版的设置、布局、自选都在，原生版直接接着用）")
+    a.addButton(withTitle: L("退出旧版"))
+    a.addButton(withTitle: L("都留着"))
     NSApp.activate(ignoringOtherApps: true)
     if a.runModal() == .alertFirstButtonReturn { for app in old { app.terminate() } }
   }
@@ -96,39 +96,39 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let main = NSMenu()
     let appItem = NSMenuItem()
     let appMenu = NSMenu()
-    appMenu.addItem(withTitle: "关于桌面信息中心", action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
+    appMenu.addItem(withTitle: L("关于桌面信息中心"), action: #selector(NSApplication.orderFrontStandardAboutPanel(_:)), keyEquivalent: "")
     appMenu.addItem(.separator())
-    appMenu.addItem(withTitle: "退出桌面信息中心", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+    appMenu.addItem(withTitle: L("退出桌面信息中心"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
     appItem.submenu = appMenu
     main.addItem(appItem)
 
     // 「编辑」菜单：输入框里的复制、粘贴、全选、撤销靠它（没有这个菜单，⌘C / ⌘V 不起作用）
     let editItem = NSMenuItem()
     let edit = NSMenu(title: L("编辑"))
-    edit.addItem(withTitle: "撤销", action: Selector(("undo:")), keyEquivalent: "z")
-    edit.addItem(withTitle: "重做", action: Selector(("redo:")), keyEquivalent: "Z")
+    edit.addItem(withTitle: L("撤销"), action: Selector(("undo:")), keyEquivalent: "z")
+    edit.addItem(withTitle: L("重做"), action: Selector(("redo:")), keyEquivalent: "Z")
     edit.addItem(.separator())
-    edit.addItem(withTitle: "剪切", action: #selector(NSText.cut(_:)), keyEquivalent: "x")
-    edit.addItem(withTitle: "拷贝", action: #selector(NSText.copy(_:)), keyEquivalent: "c")
-    edit.addItem(withTitle: "粘贴", action: #selector(NSText.paste(_:)), keyEquivalent: "v")
-    edit.addItem(withTitle: "全选", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
+    edit.addItem(withTitle: L("剪切"), action: #selector(NSText.cut(_:)), keyEquivalent: "x")
+    edit.addItem(withTitle: L("拷贝"), action: #selector(NSText.copy(_:)), keyEquivalent: "c")
+    edit.addItem(withTitle: L("粘贴"), action: #selector(NSText.paste(_:)), keyEquivalent: "v")
+    edit.addItem(withTitle: L("全选"), action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
     editItem.submenu = edit
     main.addItem(editItem)
 
     let viewItem = NSMenuItem()
     let view = NSMenu(title: L("显示"))
-    view.addItem(item("呼出浮层", #selector(showOverlay), ""))
-    view.addItem(item("管家", #selector(showButler), "1"))
-    view.addItem(item("市场", #selector(showMarket), "2"))
-    view.addItem(item("新闻", #selector(showNews), "3"))
-    view.addItem(item("设置", #selector(showSettings), ","))
+    view.addItem(item(L("呼出浮层"), #selector(showOverlay), ""))
+    view.addItem(item(L("管家"), #selector(showButler), "1"))
+    view.addItem(item(L("市场"), #selector(showMarket), "2"))
+    view.addItem(item(L("新闻"), #selector(showNews), "3"))
+    view.addItem(item(L("设置"), #selector(showSettings), ","))
     view.addItem(.separator())
-    view.addItem(item("应用和桌面", #selector(toggleLauncher), "e"))
-    view.addItem(item("编辑桌面组件", #selector(editLayout), "l"))
-    view.addItem(item("AI 总控台", #selector(showConsole), "0"))
-    view.addItem(item("Muse（在浏览器里打开）", #selector(openMuse), ""))
+    view.addItem(item(L("应用和桌面"), #selector(toggleLauncher), "e"))
+    view.addItem(item(L("编辑桌面组件"), #selector(editLayout), "l"))
+    view.addItem(item(L("AI 总控台"), #selector(showConsole), "0"))
+    view.addItem(item(L("Muse（在浏览器里打开）"), #selector(openMuse), ""))
     view.addItem(.separator())
-    view.addItem(item("立即刷新全部数据", #selector(refreshAll), "r"))
+    view.addItem(item(L("立即刷新全部数据"), #selector(refreshAll), "r"))
     viewItem.submenu = view
     main.addItem(viewItem)
     NSApp.mainMenu = main

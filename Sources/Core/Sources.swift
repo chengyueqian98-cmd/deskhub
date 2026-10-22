@@ -108,7 +108,7 @@ enum MailAPI {
       if let dm = g(2).match("^(\\d+)-(\\d+)-(\\d+) (\\d+)$") {
         ts = localMs(Int(dm[1]!)!, Int(dm[2]!)!, Int(dm[3]!)!) + Double(Int(dm[4]!)!) * 1000
       }
-      return MailItem(name: who.name, email: who.email, subject: g(1).isEmpty ? "（无主题）" : g(1), ts: ts, id: g(3), account: g(4))
+      return MailItem(name: who.name, email: who.email, subject: g(1).isEmpty ? L("（无主题）") : g(1), ts: ts, id: g(3), account: g(4))
     }.sorted { ($0.ts ?? 0) > ($1.ts ?? 0) }
     return (unread, items)
   }
@@ -139,7 +139,7 @@ enum MailAPI {
     let who = parseSender(f.first ?? "")
     let body = f.dropFirst(2).joined(separator: US).replacingOccurrences(of: "\r\n", with: "\n").replacingOccurrences(of: "\r", with: "\n")
       .replace("[ \\t]+\n", "\n").replace("\n{3,}", "\n\n").trimmed()
-    return (who.name, who.email, f.count > 1 && !f[1].isEmpty ? f[1] : "（无主题）", body)
+    return (who.name, who.email, f.count > 1 && !f[1].isEmpty ? f[1] : L("（无主题）"), body)
   }
 
   /** 在「邮件」App 里打开这封邮件（和 JS 的 encodeURIComponent 一样转义） */

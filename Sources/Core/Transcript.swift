@@ -89,9 +89,9 @@ enum ClaudeStream {
 
   /** 命令行的报错翻译成人话 */
   static func explain(_ text: String) -> String {
-    if text.test("not logged in|/login|auth", .caseInsensitive) { return "Claude Code 命令行还没登录：在终端运行 claude，按提示登录后再试（或换成 DeepSeek）" }
-    if text.test("credit|billing|quota", .caseInsensitive) { return "Claude 额度不够了：" + text }
-    return text.isEmpty ? "Claude Code 出错了" : text
+    if text.test("not logged in|/login|auth", .caseInsensitive) { return L("Claude Code 命令行还没登录：在终端运行 claude，按提示登录后再试（或换成 DeepSeek）") }
+    if text.test("credit|billing|quota", .caseInsensitive) { return L("Claude 额度不够了：") + text }
+    return text.isEmpty ? L("Claude Code 出错了") : text
   }
 }
 

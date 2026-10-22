@@ -38,6 +38,8 @@ final class DeskModel: ObservableObject {
   @Published var pomo = Pomodoro()
   @Published var layouts: [String: Layout] = [:]          // 其它显示器的布局（主屏的是 layout）
   @Published var configOpen: String?                      // 浮层里正在设置的组件
+  @Published var update: Update.Release?               // GitHub 上有比现在新的版本
+  @Published var updateStatus = ""                     // 设置页里「检查更新」的结果
   var overlayKey = "main"                                 // 浮层开在哪块屏上（编辑的就是那块屏的布局）
   var aiImportant = Set<String>(), aiAsked = Set<String>()
   var onKeys: ((Set<String>) -> Void)?   // 设置变了要窗口层配合的（快捷键、刘海）
@@ -86,6 +88,7 @@ final class DeskModel: ObservableObject {
     loop("cities", every: { 15 * 60 }) { await $0.refreshCities() }
     loop("todos", every: { 10 * 60 }) { $0.refreshTodos() }
     loop("photos", every: { 30 * 60 }) { $0.rotatePhotos() }
+    loop("update", every: { 6 * 3600 }) { await $0.checkUpdate() }
     Font2.scale = theme.scale
     NotificationCenter.default.addObserver(forName: .EKEventStoreChanged, object: Fetch.eventStore, queue: .main) { [weak self] _ in
       MainActor.assumeIsolated { self?.refreshCalendar(); self?.refreshTodos() }
@@ -142,7 +145,7 @@ final class DeskModel: ObservableObject {
       quotes = out
       marketError = nil
       let alerts = Market.checkAlerts(Array(out.values), pct: store.alertPct, prices: store.priceAlerts, memo: &alertMemo, day: Brief.todayStr())
-      for a in alerts { notify(a.title, a.body + "\n（延迟数据，仅供参考）") }
+      for a in alerts { notify(a.title, a.body + "\n" + L("（延迟数据，仅供参考）")) }
     } catch {
       marketError = error.localizedDescription
       for k in quotes.keys { quotes[k]?.failed = true }

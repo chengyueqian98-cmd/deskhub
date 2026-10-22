@@ -43,7 +43,7 @@ final class ConsoleModel: ObservableObject {
     if agent == "claude" {
       let p = NSOpenPanel()
       p.canChooseDirectories = true; p.canChooseFiles = false
-      p.message = "Claude Code 在哪个文件夹里工作？"
+      p.message = L("Claude Code 在哪个文件夹里工作？")
       p.directoryURL = URL(fileURLWithPath: lastCwd)
       guard p.runModal() == .OK, let u = p.url else { return }
       lastCwd = u.path
@@ -66,7 +66,7 @@ final class ConsoleWindow: NSObject, NSWindowDelegate {
       let cm = ConsoleModel()
       self.cm = cm
       let w = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1080, height: 720), styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView], backing: .buffered, defer: false)
-      w.title = "AI 总控台"
+      w.title = L("AI 总控台")
       w.titlebarAppearsTransparent = true
       w.isReleasedWhenClosed = false
       w.minSize = NSSize(width: 760, height: 480)
@@ -130,10 +130,10 @@ struct ConsoleView: View {
           let mine = mineChats
           if !mine.isEmpty {
             Text(L("这次打开的")).font(Font2.ui(11)).foregroundStyle(pal.text3).padding(.top, 4)
-            ForEach(mine) { c in sessionRow(title: c.title, sub: c.agent == "claude" ? folder(c.cwd) : (c.busy ? "正在回复" : "DeepSeek"), on: cm.current === c) { cm.current = c } }
+            ForEach(mine) { c in sessionRow(title: c.title, sub: c.agent == "claude" ? folder(c.cwd) : (c.busy ? L("正在回复") : "DeepSeek"), on: cm.current === c) { cm.current = c } }
           }
           if cm.agent == "claude" {
-            Text(cm.loading ? "正在读取本机的会话…" : "本机的 Claude 会话").font(Font2.ui(11)).foregroundStyle(pal.text3).padding(.top, 8)
+            Text(cm.loading ? L("正在读取本机的会话…") : L("本机的 Claude 会话")).font(Font2.ui(11)).foregroundStyle(pal.text3).padding(.top, 8)
             ForEach(cm.claudeList) { s in
               sessionRow(title: s.title, sub: "\(folder(s.cwd)) · \(F.rel(s.updated))", on: cm.current?.claudeSession == s.id) { cm.openClaude(s) }
             }
@@ -172,7 +172,7 @@ struct ConsoleView: View {
   private var welcome: some View {
     VStack(spacing: 10) {
       Image(systemName: "sparkles").font(.system(size: 30)).foregroundStyle(pal.text3)
-      Text(cm.agent == "claude" ? "选一个左边的会话接着聊，或者新开一个（先选它在哪个文件夹里工作）" : "新开一段和 DeepSeek 的对话").font(Font2.ui(13)).foregroundStyle(pal.text2)
+      Text(cm.agent == "claude" ? L("选一个左边的会话接着聊，或者新开一个（先选它在哪个文件夹里工作）") : L("新开一段和 DeepSeek 的对话")).font(Font2.ui(13)).foregroundStyle(pal.text2)
       Button(L("＋ 新对话")) { cm.newChat(cm.agent) }.buttonStyle(PillButton())
     }.frame(maxWidth: .infinity, maxHeight: .infinity)
   }
@@ -189,7 +189,7 @@ struct ChatPane: View {
       HStack(spacing: 10) {
         VStack(alignment: .leading, spacing: 2) {
           Text(chat.title).font(Font2.ui(14, .semibold)).lineLimit(1)
-          Text(chat.agent == "claude" ? "Claude Code · \(chat.cwd)" : "DeepSeek · \(model.deepseekModel == "deepseek-reasoner" ? "推理" : "对话")").font(Font2.ui(11)).foregroundStyle(pal.text3).lineLimit(1)
+          Text(chat.agent == "claude" ? "Claude Code · \(chat.cwd)" : "DeepSeek · \(model.deepseekModel == "deepseek-reasoner" ? L("推理") : L("对话"))").font(Font2.ui(11)).foregroundStyle(pal.text3).lineLimit(1)
         }
         Spacer()
         if chat.agent == "claude" {
@@ -216,7 +216,7 @@ struct ChatPane: View {
         .onAppear { sv.scrollTo("end", anchor: .bottom) }
       }
       HStack(spacing: 8) {
-        TextField(chat.agent == "claude" ? "给 Claude Code 发消息（回车发送，⌥回车换行）" : "给 DeepSeek 发消息（回车发送）", text: $text, axis: .vertical)
+        TextField(chat.agent == "claude" ? L("给 Claude Code 发消息（回车发送，⌥回车换行）") : L("给 DeepSeek 发消息（回车发送）"), text: $text, axis: .vertical)
           .textFieldStyle(.plain).font(Font2.ui(13.5)).lineLimit(1...8).onSubmit(send)
         Button { chat.busy ? chat.cancel() : send() } label: {
           Image(systemName: chat.busy ? "stop.fill" : "arrow.up").font(.system(size: 12, weight: .bold)).foregroundStyle(.black.opacity(0.8))

@@ -105,10 +105,10 @@ enum F {
 
   static func statusText(_ status: String, _ market: String) -> String {
     switch status {
-    case "live": return ["cn": "交易中", "hk": "交易中·延迟约15分钟", "us": "交易中·延迟报价"][market] ?? "交易中"
-    case "closed": return "已收盘"
-    case "stale": return "数据过期"
-    case "fail": return "获取失败"
+    case "live": return L(["cn": "交易中", "hk": "交易中·延迟约15分钟", "us": "交易中·延迟报价"][market] ?? "交易中")
+    case "closed": return L("已收盘")
+    case "stale": return L("数据过期")
+    case "fail": return L("获取失败")
     default: return "—"
     }
   }
@@ -135,9 +135,9 @@ enum F {
 
   static func riskText(_ status: String?) -> String {
     switch status {
-    case "normal": return "正常"
-    case "half": return "降半仓警戒"
-    case "exit": return "清仓警戒"
+    case "normal": return L("正常")
+    case "half": return L("降半仓警戒")
+    case "exit": return L("清仓警戒")
     default: return status ?? "—"
     }
   }

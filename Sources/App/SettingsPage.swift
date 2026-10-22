@@ -47,6 +47,15 @@ struct SettingsPage: View {
           seg("screens", st.data["screens"] as? String == "all" ? "all" : "main", [("main", "只铺主屏"), ("all", "每块屏都铺")])
           Note(text: L("每块屏一套布局；浮层会开在鼠标所在的那块屏，在那里编辑的就是那块屏的布局"))
         }
+        row("版本") {
+          Text("\(DeskModel.currentVersion)").font(Font2.num(12.5)).foregroundStyle(pal.text2)
+          Button(L("检查更新")) { Task { await model.checkUpdate(manual: true) } }.buttonStyle(MiniButton())
+          if let u = model.update {
+            Button(L("去下载 %@", u.version)) { model.openURL(u.page) }.buttonStyle(PillButton())
+            Button(L("跳过这个版本")) { model.skipUpdate() }.buttonStyle(MiniButton())
+          }
+          Text(model.updateStatus).font(Font2.ui(12)).foregroundStyle(pal.text3)
+        }
         row(L("首次引导")) { Button(L("重新打开")) { NotificationCenter.default.post(name: .showOnboarding, object: nil) }.buttonStyle(MiniButton()) }
       }
 
@@ -111,18 +120,18 @@ struct SettingsPage: View {
         row("DeepSeek") {
           VStack(alignment: .leading, spacing: 6) {
             HStack {
-              SecureField(hasKey ? "已保存（想换就重新粘贴）" : "粘贴你的 API Key（sk-…）", text: $key).textFieldStyle(.roundedBorder).frame(width: 300)
+              SecureField(hasKey ? L("已保存（想换就重新粘贴）") : L("粘贴你的 API Key（sk-…）"), text: $key).textFieldStyle(.roundedBorder).frame(width: 300)
               Button(L("保存"), action: saveKey).buttonStyle(MiniButton())
-              Button(L("测试")) { Task { keyStatus = "正在测试…"; keyStatus = await DeepSeek.test(model: model.deepseekModel).map { "✗ " + $0 } ?? "✓ 连通，Key 可用" } }.buttonStyle(MiniButton()).disabled(!hasKey)
+              Button(L("测试")) { Task { keyStatus = L("正在测试…"); keyStatus = await DeepSeek.test(model: model.deepseekModel).map { "✗ " + $0 } ?? L("✓ 连通，Key 可用") } }.buttonStyle(MiniButton()).disabled(!hasKey)
               Button(L("清除")) { Keychain.clear(); hasKey = false; keyStatus = ""; model.toast = L("已清除 DeepSeek 的 Key") }.buttonStyle(MiniButton()).disabled(!hasKey)
             }
-            Text(keyStatus.isEmpty ? (hasKey ? "✓ 已保存在系统钥匙串里，只存在这台电脑上" : "还没有 Key。去 platform.deepseek.com 创建一个，自己粘贴在这里——不要发给任何人，也不要发给 AI。") : keyStatus)
+            Text(keyStatus.isEmpty ? (hasKey ? L("✓ 已保存在系统钥匙串里，只存在这台电脑上") : L("还没有 Key。去 platform.deepseek.com 创建一个，自己粘贴在这里——不要发给任何人，也不要发给 AI。")) : keyStatus)
               .font(Font2.ui(12)).foregroundStyle(pal.text3)
             seg("deepseekModel", model.deepseekModel, DeepSeek.models.map { ($0.0, $0.1) })
           }
         }
         row("Claude Code") {
-          Note(text: ClaudeCLI.path.map { "用本机的命令行：\($0)。没登录的话先在终端运行 claude 按提示登录。" } ?? "没找到 claude 命令行；装好 Claude Code 后就能用。")
+          Note(text: ClaudeCLI.path.map { L("用本机的命令行：%@。没登录的话先在终端运行 claude 按提示登录。", $0) } ?? L("没找到 claude 命令行；装好 Claude Code 后就能用。"))
         }
         row(L("新闻来源")) {
           VStack(alignment: .leading, spacing: 6) {
@@ -215,8 +224,8 @@ struct SettingsPage: View {
 
   private func saveKey() {
     let k = key.trimmed()
-    guard k.hasPrefix("sk-"), k.count >= 20, !k.contains(" ") else { keyStatus = "✗ 这不像 DeepSeek 的 Key（应该以 sk- 开头）"; return }
-    guard Keychain.save(k) else { keyStatus = "✗ 存进钥匙串失败"; return }
+    guard k.hasPrefix("sk-"), k.count >= 20, !k.contains(" ") else { keyStatus = L("✗ 这不像 DeepSeek 的 Key（应该以 sk- 开头）"); return }
+    guard Keychain.save(k) else { keyStatus = L("✗ 存进钥匙串失败"); return }
     key = ""
     hasKey = true
     keyStatus = ""
@@ -268,13 +277,13 @@ struct RemindersSection: View {
               VStack(alignment: .leading, spacing: 4) {
                 Text(t.title).font(Font2.ui(13, .semibold)).foregroundStyle(pal.text)
                 Text("\(t.time) · \(Actions.daysText(t.days))").font(Font2.ui(11.5)).foregroundStyle(pal.text3)
-                Text(t.prompt.isEmpty ? "普通提醒，不用 AI" : t.prompt).font(Font2.ui(11.5)).foregroundStyle(pal.text2).lineLimit(3).multilineTextAlignment(.leading)
+                Text(t.prompt.isEmpty ? L("普通提醒，不用 AI") : t.prompt).font(Font2.ui(11.5)).foregroundStyle(pal.text2).lineLimit(3).multilineTextAlignment(.leading)
               }.padding(12).frame(maxWidth: .infinity, minHeight: 96, alignment: .topLeading).background(RoundedRectangle(cornerRadius: 12).fill(pal.fill))
             }.buttonStyle(.plain)
           }
         }
       }
-      Note(text: "电脑睡眠时错过的提醒，醒来 2 小时内会补上，超过就跳过。AI 提醒会用掉少量 \(agent) 的额度。")
+      Note(text: L("电脑睡眠时错过的提醒，醒来 2 小时内会补上，超过就跳过。AI 提醒会用掉少量 %@ 的额度。", agent))
     }
   }
 
@@ -289,16 +298,16 @@ struct RemindersSection: View {
         Text(Actions.daysText(days)).font(Font2.ui(11)).foregroundStyle(pal.text3)
       }.frame(width: 70, alignment: .leading)
       VStack(alignment: .leading, spacing: 4) {
-        Text((r["title"] as? String).flatMap { $0.isEmpty ? nil : $0 } ?? "未命名提醒").font(Font2.ui(13.5, .semibold)).foregroundStyle(on ? pal.text : pal.text3)
-        Text(prompt.isEmpty ? "普通提醒" : "AI：" + prompt).font(Font2.ui(12)).foregroundStyle(pal.text2).lineLimit(2)
+        Text((r["title"] as? String).flatMap { $0.isEmpty ? nil : $0 } ?? L("未命名提醒")).font(Font2.ui(13.5, .semibold)).foregroundStyle(on ? pal.text : pal.text3)
+        Text(prompt.isEmpty ? L("普通提醒") : "AI: " + prompt).font(Font2.ui(12)).foregroundStyle(pal.text2).lineLimit(2)
         if (r["running"] as? Bool) == true { Text(L("AI 正在整理…")).font(Font2.ui(12)).foregroundStyle(pal.text3) }
         else if let e = r["lastError"] as? String { Text(L("上次出错（%@）：", F.rel(num(r["lastRunAt"]))) + e).font(Font2.ui(12)).foregroundStyle(pal.orange) }
         else if let res = r["lastResult"] as? String { Text("\(F.rel(num(r["lastRunAt"])))\n\(res)").font(Font2.ui(12)).foregroundStyle(pal.text2).textSelection(.enabled) }
-        Text(on ? (Reminders.nextRun(r).map { "下次：\(F.dayLabel($0)) \(r["time"] as? String ?? "")" } ?? "") : "已关闭").font(Font2.ui(11.5)).foregroundStyle(pal.text3)
+        Text(on ? (Reminders.nextRun(r).map { L("下次：") + "\(F.dayLabel($0)) \(r["time"] as? String ?? "")" } ?? "") : L("已关闭")).font(Font2.ui(11.5)).foregroundStyle(pal.text3)
       }
       Spacer()
       HStack(spacing: 6) {
-        Button(prompt.isEmpty ? "试一下" : "现在跑一次") { model.toast = prompt.isEmpty ? "已发通知" : "已交给 AI，整理好会发通知"; model.runReminder(id) }.buttonStyle(MiniButton())
+        Button(prompt.isEmpty ? L("试一下") : L("现在跑一次")) { model.toast = prompt.isEmpty ? L("已发通知") : L("已交给 AI，整理好会发通知"); model.runReminder(id) }.buttonStyle(MiniButton())
         Button(L("编辑")) { editing = r }.buttonStyle(MiniButton())
         Button(L("删除")) { model.store.set(["reminders": (model.store.data["reminders"] as? [JSON] ?? []).filter { $0["id"] as? String != id }]) }.buttonStyle(MiniButton())
         Toggle("", isOn: Binding(get: { on }, set: { model.patchReminder(id, ["enabled": $0]) })).toggleStyle(.switch).controlSize(.mini).labelsHidden()
@@ -313,7 +322,7 @@ struct RemindersSection: View {
     let id = x["id"] as? String
     model.store.set(["reminders": isNew || !all.contains { $0["id"] as? String == id } ? all + [x] : all.map { $0["id"] as? String == id ? x : $0 }])
     editing = nil
-    model.toast = isNew ? "已添加提醒" : "已保存"
+    model.toast = isNew ? L("已添加提醒") : L("已保存")
   }
 }
 
@@ -335,7 +344,7 @@ struct ReminderEditor: View {
           DatePicker("", selection: $time, displayedComponents: .hourAndMinute).labelsHidden().frame(width: 90)
           ForEach(1...7, id: \.self) { d in
             let on = Reminders.days(r).contains(d)
-            Button(["", "一", "二", "三", "四", "五", "六", "日"][d]) {
+            Button(F.weekHeads[d - 1]) {
               var ds = Reminders.days(r)
               if on { ds.removeAll { $0 == d } } else { ds.append(d); ds.sort() }
               r["days"] = ds
@@ -349,7 +358,8 @@ struct ReminderEditor: View {
         }
         HStack {
           Text(L("附带的信息")).frame(width: 80, alignment: .leading)
-          ForEach([("calendar", "日程"), ("mail", "未读邮件"), ("market", "自选行情"), ("quant", "量化账户")], id: \.0) { k, n in
+          ForEach([("calendar", "日程"), ("mail", "未读邮件"), ("market", "自选行情"), ("quant", "量化账户")], id: \.0) { k, n0 in
+            let n = L(n0)
             let ctx = r["context"] as? JSON ?? [:]
             let on = (ctx[k] as? Bool) == true
             Button(n) { var c = ctx; c[k] = !on; r["context"] = c }.buttonStyle(ChipStyle(on: on))

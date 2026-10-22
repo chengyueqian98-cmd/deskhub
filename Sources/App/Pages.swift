@@ -115,6 +115,12 @@ struct TopBar: View {
       .padding(3).background(Capsule().fill(pal.fill))
       HStack(spacing: 14) {
         Spacer()
+        if let u = model.update {
+          Button { model.openURL(u.page) } label: {
+            Label(L("新版本 %@", u.version), systemImage: "arrow.down.circle.fill").font(Font2.ui(11.5, .medium)).foregroundStyle(.white)
+              .padding(.horizontal, 10).padding(.vertical, 4).background(Capsule().fill(pal.accent))
+          }.buttonStyle(.plain).help(u.notes.isEmpty ? L("去下载") : u.notes)
+        }
         BatteryBar(devices: model.battery)
         if model.page == "home" {
           Button(model.editing ? L("完成") : L("编辑")) { model.editing.toggle() }.buttonStyle(PillButton())
@@ -161,7 +167,7 @@ struct BatteryBar: View {
       }
     }
     .help(devices.map { d in
-      let state = d.charging ? "充电中" : (d.charged || (d.ac && d.pct >= 99)) ? "已充满" : d.ac ? "接电源" : ""
+      let state = d.charging ? L("充电中") : (d.charged || (d.ac && d.pct >= 99)) ? L("已充满") : d.ac ? L("接电源") : ""
       return "\(d.internal ? "Mac" : BatteryInfo.shortName(d.name)) \(d.pct)%\(state.isEmpty ? "" : " · " + state)"
     }.joined(separator: "\n"))
   }

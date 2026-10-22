@@ -170,3 +170,16 @@ func extraTests() {
     eq(Brief.say(Candidate(id: "1", kind: "watch_move", actionable: 1, surprise: 2, facts: ["name": "AAPL", "pct": "+3%"])), "AAPL 今天 +3%。")
   }
 }
+
+func updateTests() {
+  test("检查更新：版本号比大小、跳过、草稿不算") {
+    eq(Update.compare("0.4.10", "0.4.9"), 1); eq(Update.compare("v0.4.0", "0.4"), 0); eq(Update.compare("0.4.0", "0.5.0"), -1); eq(Update.compare("1.0.0-beta", "1.0.0"), 0)
+    let r = Update.parse(["tag_name": "v0.5.0", "html_url": "https://x", "body": "新功能"])
+    eq(r?.version, "0.5.0")
+    ok(Update.newer(r, than: "0.4.1", skip: nil) != nil)
+    ok(Update.newer(r, than: "0.5.0", skip: nil) == nil)
+    ok(Update.newer(r, than: "0.4.1", skip: "0.5.0") == nil, "跳过的版本不再提示")
+    ok(Update.parse(["tag_name": "v9", "draft": true]) == nil)
+    ok(Update.parse(["tag_name": "v9", "prerelease": true]) == nil)
+  }
+}

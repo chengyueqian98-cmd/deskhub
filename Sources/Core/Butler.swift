@@ -72,7 +72,7 @@ enum Brief {
     r.date = r.state.date
     var alive: [(Candidate, Int)] = []
     for c in cands {
-      if c.id.isEmpty { r.dropped.append(("(无 id)", "no-id")); continue }
+      if c.id.isEmpty { r.dropped.append(("(no id)", "no-id")); continue }
       if let last = r.state.seen[c.id], now - last < seenHours * 3600e3 { r.dropped.append((c.id, "repeat")); continue }
       guard let lv = levelOf(c) else { r.dropped.append((c.id, "never")); continue }
       var x = c
@@ -171,11 +171,11 @@ enum Cands {
 
   static func ago(_ ts: Double, _ now: Double) -> String {
     let m = Int(((now - ts) / 60000).rounded())
-    if m < 1 { return "刚刚" }
-    if m < 60 { return "\(m) 分钟前" }
+    if m < 1 { return L("刚刚") }
+    if m < 60 { return L("%@ 分钟前", "\(m)") }
     let h = Int((Double(m) / 60).rounded())
-    if h < 24 { return "\(h) 小时前" }
-    return "\(Int((Double(h) / 24).rounded())) 天前"
+    if h < 24 { return L("%@ 小时前", "\(h)") }
+    return L("%@ 天前", "\(Int((Double(h) / 24).rounded()))")
   }
 
   /** 有人在等你：未读 + 近 3 天 + 发件人或主题命中你填的名单（或 AI 判断为重要）；银行/转账/账单是第二档 */
@@ -190,11 +190,11 @@ enum Cands {
       let evidence = [x.email, ago(ts, now), x.account].filter { !$0.isEmpty }
       if any(hit, text) || rules.aiHits.contains(x.id) {
         out.append(Candidate(id: id, kind: "mail_waiting", actionable: 3, surprise: 3, urgency: 2, facts: facts, evidence: evidence,
-                             action: x.id.isEmpty ? nil : CandAction(label: "去回", type: "mail", arg: x.id)))
+                             action: x.id.isEmpty ? nil : CandAction(label: L("去回"), type: "mail", arg: x.id)))
       } else if rules.money && any(mailMoney, text) {
         let alert = any(mailMoneyAlert, text)
         out.append(Candidate(id: id, kind: "mail_money", actionable: alert ? 3 : 2, surprise: alert ? 3 : 1, urgency: alert ? 3 : 1, facts: facts, evidence: evidence,
-                             action: x.id.isEmpty ? nil : CandAction(label: "去看", type: "mail", arg: x.id)))
+                             action: x.id.isEmpty ? nil : CandAction(label: L("去看"), type: "mail", arg: x.id)))
       }
     }
     return out
@@ -224,16 +224,16 @@ enum Cands {
       var facts = ["name": p.name, "pct": pct]
       if stale && !asOf.isEmpty { facts["asOf"] = asOf }
       let ev: [String] = [
-        "\(p.code) \(p.name)", "现价 \(p.price.map(jsNum) ?? "—")", "成本 \(p.cost.map(jsNum) ?? "—")",
-        "浮亏 \(p.pnl.map(jsNum) ?? "—")", stopped ? "已破 \(jsNum(stopLoss))% 止损线" : p.tMsg,
-        asOf.isEmpty ? "" : "数据 \(asOf)", quant.running == false ? "量化系统已停机" : "",
-        (hours ?? 0) > 24 ? "这批数据已 \(Int(hours!.rounded())) 小时没更新" : "",
+        "\(p.code) \(p.name)", L("现价 %@", p.price.map(jsNum) ?? "—"), L("成本 %@", p.cost.map(jsNum) ?? "—"),
+        L("浮亏 %@", p.pnl.map(jsNum) ?? "—"), stopped ? L("已破 %@%% 止损线", jsNum(stopLoss)) : p.tMsg,
+        asOf.isEmpty ? "" : L("数据 %@", asOf), quant.running == false ? L("量化系统已停机") : "",
+        (hours ?? 0) > 24 ? L("这批数据已 %@ 小时没更新", "\(Int(hours!.rounded()))") : "",
       ].filter { !$0.isEmpty }
       out.append(Candidate(
         id: "risk:\(p.code):\(stopped ? "sl" : p.tType)\(stale ? ":stale" : "")",
         kind: stale && !asOf.isEmpty ? "risk_stale" : "risk_alert",
         actionable: stale ? 1 : 3, surprise: stale ? 2 : (stopped ? 3 : 2), urgency: stale ? 1 : (stopped ? 3 : 2),
-        facts: facts, evidence: ev, action: CandAction(label: "看持仓", type: "nav", arg: "stock")))
+        facts: facts, evidence: ev, action: CandAction(label: L("看持仓"), type: "nav", arg: "stock")))
     }
     return out
   }
@@ -247,7 +247,7 @@ enum Cands {
     return [Candidate(
       id: "day:" + Brief.todayStr(now), kind: "day_ahead", actionable: 2, surprise: 1, urgency: 1,
       facts: ["temp": "\(w.now.temp)", "rain": rainy ? (w.days.first?.text ?? "有雨") : "", "note": rainy ? "记得带伞" : "多穿点"],
-      evidence: [w.city, w.now.text, "体感 \(w.now.feels) 度", "降水 \(rain)%"].filter { !$0.isEmpty })]
+      evidence: [w.city, L(w.now.text), L("体感 %@ 度", "\(w.now.feels)"), L("降水 %@%%", "\(rain)")].filter { !$0.isEmpty })]
   }
 
   /** 日程：快开始了才说（20 分钟内）。只说「开始了」，不替你判断该不该去 */
@@ -262,7 +262,7 @@ enum Cands {
       out.append(Candidate(
         id: "cal:\(e.id.isEmpty ? e.title : e.id):\(jsNum(e.start))", kind: "event_soon", actionable: 3, surprise: 1, urgency: 3,
         facts: ["title": e.title, "at": at, "place": e.location],
-        evidence: ["\(at) 开始", e.location.isEmpty ? "" : "地点 \(e.location)", "\(Int(min.rounded())) 分钟后"].filter { !$0.isEmpty }))
+        evidence: [L("%@ 开始", at), e.location.isEmpty ? "" : L("地点 %@", e.location), L("%@ 分钟后", "\(Int(min.rounded()))")].filter { !$0.isEmpty }))
     }
     return out
   }
@@ -278,8 +278,8 @@ enum Cands {
       .map { q in
         Candidate(id: "move:\(q.key):\(day)", kind: "watch_move", actionable: 1, surprise: 2, urgency: 1,
                   facts: ["name": q.name, "pct": (q.pct! >= 0 ? "+" : "") + jsNum(q.pct!) + "%"],
-                  evidence: ["\(q.code) \(q.name)", "现价 \(q.price.map(jsNum) ?? "—")", "超过你设的 \(jsNum(alertPct))% 阈值"],
-                  action: CandAction(label: "看自选", type: "nav", arg: "stock"))
+                  evidence: ["\(q.code) \(q.name)", L("现价 %@", q.price.map(jsNum) ?? "—"), L("超过你设的 %@%% 阈值", jsNum(alertPct))],
+                  action: CandAction(label: L("看自选"), type: "nav", arg: "stock"))
       }
   }
 
@@ -350,10 +350,10 @@ enum Plans {
     guard s.side != "none", s.side != "mid", let dist = s.dist else { return "" }
     let d = String(format: "%.1f", abs(dist) * 100) + "%"
     switch s.side {
-    case "under_buy": return "已低于买入价 " + d
-    case "over_sell": return "已高于卖出价 " + d
-    case "near_buy": return "距买入 " + d
-    default: return "距卖出 " + d
+    case "under_buy": return L("已低于买入价 ") + d
+    case "over_sell": return L("已高于卖出价 ") + d
+    case "near_buy": return L("距买入 ") + d
+    default: return L("距卖出 ") + d
     }
   }
 
@@ -374,9 +374,9 @@ enum Plans {
       out.append(Candidate(
         id: "plan:\(key):\(s.side):\(day)", kind: "plan_hit", actionable: hit ? 3 : 2, surprise: hit ? 2 : 1, urgency: hit ? 2 : 1,
         facts: ["name": name, "price": jsNum(price), "dir": dir, "which": which, "target": target.map(jsNum) ?? ""],
-        evidence: ["\(q.code) \(q.name)".trimmed(), "现价 \(jsNum(price))", "\(which) \(target.map(jsNum) ?? "")",
-                   plan.note.isEmpty ? "" : "观察：\(plan.note)", q.status == "live" ? "交易中" : "已收盘，价格不是最新的"].filter { !$0.isEmpty },
-        action: CandAction(label: "看自选", type: "nav", arg: "stock")))
+        evidence: ["\(q.code) \(q.name)".trimmed(), L("现价 %@", jsNum(price)), "\(L(which)) \(target.map(jsNum) ?? "")",
+                   plan.note.isEmpty ? "" : L("观察：") + plan.note, q.status == "live" ? L("交易中") : L("已收盘，价格不是最新的")].filter { !$0.isEmpty },
+        action: CandAction(label: L("看自选"), type: "nav", arg: "stock")))
     }
     return out
   }
@@ -396,9 +396,9 @@ enum Plans {
       return Candidate(
         id: "cap:\(p.code):\(day)", kind: "position_cap", actionable: 2, surprise: 1, urgency: 1,
         facts: ["name": p.name, "share": jsNum(share) + "%", "cap": jsNum(maxPerPct) + "%"],
-        evidence: ["\(p.code) \(p.name)", "市值 \(p.mv.map(jsNum) ?? "—")", "你填的账户金额 \(jsNum(acctSize))", "单票上限 \(jsNum(maxPerPct))%",
-                   share > 100 ? "占比超过 100%，说明你填的账户金额比当前市值还小" : ""].filter { !$0.isEmpty },
-        action: CandAction(label: "看持仓", type: "nav", arg: "stock"))
+        evidence: ["\(p.code) \(p.name)", L("市值 %@", p.mv.map(jsNum) ?? "—"), L("你填的账户金额 %@", jsNum(acctSize)), L("单票上限 %@%%", jsNum(maxPerPct)),
+                   share > 100 ? L("占比超过 100%，说明你填的账户金额比当前市值还小") : ""].filter { !$0.isEmpty },
+        action: CandAction(label: L("看持仓"), type: "nav", arg: "stock"))
     }
   }
 }

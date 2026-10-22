@@ -57,7 +57,8 @@ enum Reminders {
     let t = ymd(now)
     var parts = [
       "你是用户 Mac 桌面上的提醒助手。现在是 \(t.y)/\(t.m)/\(t.d) \(pad2(t.h)):\(pad2(t.mi))。",
-      "请用简体中文、简短地回答（适合放进系统通知和桌面小卡片，200 字以内，可以分几行）。",
+      appLang == "en" ? "Reply in English, briefly (it goes into a system notification and a small desktop card; under 80 words, a few lines is fine)."
+        : "请用简体中文、简短地回答（适合放进系统通知和桌面小卡片，200 字以内，可以分几行）。",
       "如果涉及股票行情，只做客观描述，不要给出任何买入、卖出或持有的建议。",
       "不需要使用任何工具，直接根据下面的信息回答。",
       "",
@@ -76,7 +77,14 @@ enum Reminders {
   }
 
   /** 模板（提醒页「从模板开始」） */
-  static let templates: [(title: String, time: String, days: [Int], prompt: String, context: [String: Bool])] = [
+  static var templates: [(title: String, time: String, days: [Int], prompt: String, context: [String: Bool])] { appLang == "en" ? templatesEn : templatesZh }
+  static let templatesEn: [(title: String, time: String, days: [Int], prompt: String, context: [String: Bool])] = [
+    ("Morning briefing", "08:00", [], "Summarize today's events and the unread mail worth reading first; point out the one or two most important things.", ["calendar": true, "mail": true, "market": false, "quant": false]),
+    ("Market open", "09:25", [1, 2, 3, 4, 5], "In three or four sentences, objectively describe how the markets on my watchlist look right now.", ["calendar": false, "mail": false, "market": true, "quant": false]),
+    ("End of day", "18:30", [1, 2, 3, 4, 5], "Check tomorrow's events and list anything I should prepare.", ["calendar": true, "mail": true, "market": false, "quant": false]),
+    ("Stretch & water", "15:00", [], "", [:]),
+  ]
+  static let templatesZh: [(title: String, time: String, days: [Int], prompt: String, context: [String: Bool])] = [
     ("早间简报", "08:00", [], "总结今天的日程和值得先看的未读邮件，提醒我最重要的一两件事。", ["calendar": true, "mail": true, "market": false, "quant": false]),
     ("A 股开盘", "21:25", [1, 2, 3, 4, 5], "用三四句话客观描述一下我自选里各市场现在的情况。", ["calendar": false, "mail": false, "market": true, "quant": true]),
     ("收工复盘", "22:30", [1, 2, 3, 4, 5], "看看明天有什么日程需要提前准备，列成清单。", ["calendar": true, "mail": true, "market": false, "quant": false]),

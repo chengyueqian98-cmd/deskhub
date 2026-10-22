@@ -345,7 +345,7 @@ struct MarketWidget: View {
         Text(L("行情获取失败：%@，显示的是上次的数字", err)).font(Font2.ui(11)).foregroundStyle(pal.text3).lineLimit(2)
       }
     }
-    .help(L("新浪公开行情 · 延迟数据，仅供参考") + (model.marketAt > 0 ? " · 更新 " + F.hm(model.marketAt) : ""))
+    .help(L("新浪公开行情 · 延迟数据，仅供参考") + (model.marketAt > 0 ? L(" · 更新 ") + F.hm(model.marketAt) : ""))
   }
 
   private func row(_ q: Quote?, key: String, colors: String) -> some View {
@@ -367,7 +367,7 @@ struct MarketWidget: View {
     .frame(height: 30)
     .contentShape(Rectangle())
     .onTapGesture { if cell.interactive { model.symbolOpen = key } }
-    .help(q.map { "\($0.name) \($0.code)\n\(F.statusText($0.status, $0.market))\($0.ts.map { "\n数据时间 " + F.rel($0) } ?? "")" } ?? "加载中")
+    .help(q.map { "\($0.name) \($0.code)\n\(F.statusText($0.status, $0.market))\($0.ts.map { "\n数据时间 " + F.rel($0) } ?? "")" } ?? L("加载中"))
   }
 
   private func dot(_ s: String?) -> Color {
@@ -404,7 +404,7 @@ struct MailWidget: View {
       if !m.ok {
         VStack(alignment: .leading, spacing: 8) {
           Empty(text: m.notRunning ? L("打开「邮件」App 后，这里会显示未读邮件") : (m.error ?? ""))
-          if (m.error ?? "").contains("自动化") { PrivacyButton(model: model, cell: cell, pane: "Privacy_Automation") }
+          if (m.error ?? "").contains(L("自动化")) || (m.error ?? "").contains("自动化") { PrivacyButton(model: model, cell: cell, pane: "Privacy_Automation") }
           if m.notRunning && cell.interactive { Button(L("打开邮件")) { model.openApp("com.apple.mail") }.buttonStyle(PillButton()) }
         }
       } else if m.items.isEmpty {
@@ -458,7 +458,7 @@ struct NewsWidget: View {
           ForEach(Array(n.items.prefix(max(1, rows)).enumerated()), id: \.offset) { _, x in row(x) }
         }.padding(.top, 6)
       } else {
-        Empty(text: model.news?.error.map { "新闻获取失败：" + $0 } ?? "加载中…")
+        Empty(text: model.news?.error.map { L("新闻获取失败：") + $0 } ?? L("加载中…"))
       }
       Spacer(minLength: 0)
     }

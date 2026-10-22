@@ -154,11 +154,11 @@ enum Market {
       guard !q.failed, let p = q.pct, let price = q.price else { continue }
       let name = "\(q.name)（\(q.code)）"
       if pct > 0 && abs(p) >= pct {
-        fire("\(q.key)|pct\(p > 0 ? "+" : "-")", "\(name) \(p > 0 ? "涨" : "跌")幅 \(String(format: "%.2f", abs(p)))%", "现价 \(jsNum(price))，超过你设的 \(jsNum(pct))% 提醒线")
+        fire("\(q.key)|pct\(p > 0 ? "+" : "-")", L(p > 0 ? "%@ 涨幅 %@%%" : "%@ 跌幅 %@%%", name, String(format: "%.2f", abs(p))), L("现价 %@，超过你设的 %@%% 提醒线", jsNum(price), jsNum(pct)))
       }
       let rule = prices[q.key] as? JSON
-      if let above = num(rule?["above"]), above != 0, price >= above { fire("\(q.key)|above\(jsNum(above))", "\(name) 升到 \(jsNum(price))", "已到达你设的 \(jsNum(above))") }
-      if let below = num(rule?["below"]), below != 0, price <= below { fire("\(q.key)|below\(jsNum(below))", "\(name) 跌到 \(jsNum(price))", "已到达你设的 \(jsNum(below))") }
+      if let above = num(rule?["above"]), above != 0, price >= above { fire("\(q.key)|above\(jsNum(above))", L("%@ 升到 %@", name, jsNum(price)), L("已到达你设的 %@", jsNum(above))) }
+      if let below = num(rule?["below"]), below != 0, price <= below { fire("\(q.key)|below\(jsNum(below))", L("%@ 跌到 %@", name, jsNum(price)), L("已到达你设的 %@", jsNum(below))) }
     }
     return out
   }

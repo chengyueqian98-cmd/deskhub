@@ -193,7 +193,7 @@ struct NotchView: View {
           meter("CPU", nm.cpu)
         }.frame(width: NotchWindow.wing).padding(.horizontal, 14)
         Spacer().frame(width: notchW - 28)
-        meter("内存", nm.mem).frame(width: NotchWindow.wing, alignment: .trailing).padding(.horizontal, 14)
+        meter(L("内存"), nm.mem).frame(width: NotchWindow.wing, alignment: .trailing).padding(.horizontal, 14)
       }.frame(height: barH)
       if lyric {
         Text(nm.line).font(.system(size: nm.line.hasPrefix("♪") ? 12 : 13, weight: .medium)).foregroundStyle(.white.opacity(nm.line.hasPrefix("♪") ? 0.6 : 1))

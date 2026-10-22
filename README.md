@@ -19,6 +19,7 @@
 - **能聊天、能办事**（可选）：填一个 DeepSeek 的 Key，或用本机的 Claude Code。说「把腾讯加进自选」「明早 8 点提醒我交作业」，它列出要做的事，**你点了才执行**。
 - **首次引导**：选语言、选身份（学生 / 上班 / 投资 / 极简）就摆好一套。中文、English 都有。
 - **主题**：强调色、字号、两侧渐隐浓淡、线条或卡片风格；多显示器每块屏一套布局。
+- **自动检查更新**：有新版本时在浮层右上角提示一下（只问 GitHub「最新版本是几号」，不带任何个人信息，不会自动下载安装）。
 - **隐私**：没有账号、没有服务器、不收集任何数据。日历、邮件只读；邮件正文只有你点开或让管家概括时才读。代码全部开源。
 
 ## 安装
@@ -54,7 +55,7 @@
 - Native SwiftUI: 6 MB download, ~50 MB memory, near-zero idle CPU.
 - 16 widget types, add several of the same kind with their own settings; iOS-style sizes with snapping and auto-arrange.
 - Optional AI (bring your own DeepSeek key, or use a local Claude Code): ask questions or say "remind me at 8 tomorrow" — it shows a confirmation card and only acts after you tap Run.
-- Apple-style first-run tour, English and Chinese UI, themes, multi-display layouts.
+- Apple-style first-run tour, full English and Chinese UI, themes, multi-display layouts, update notifications.
 - No account, no server, no tracking. Open source under MIT.
 
 **Install:** download the DMG from Releases and drag the app to Applications. On first launch macOS will block it (no paid Developer ID) — go to System Settings → Privacy & Security and click "Open Anyway". Requires macOS 14+ on Apple silicon.

@@ -125,7 +125,7 @@ struct LauncherPanel: View {
           Label(L("应用"), systemImage: "square.grid.2x2").tag("apps")
           Label(L("桌面"), systemImage: "folder").tag("desk")
         }.pickerStyle(.segmented).frame(width: 170).labelsHidden()
-        TextField(lm.tab == "apps" ? "搜索 \(lm.apps.count) 个应用" : "搜索桌面上的文件", text: $lm.query)
+        TextField(lm.tab == "apps" ? L("搜索 %@ 个应用", "\(lm.apps.count)") : L("搜索桌面上的文件"), text: $lm.query)
           .textFieldStyle(.plain).font(Font2.ui(13)).padding(.horizontal, 12).padding(.vertical, 6)
           .background(Capsule().fill(pal.fill)).frame(width: 240)
           .onSubmit { lm.open(lm.list.first) }
@@ -140,7 +140,7 @@ struct LauncherPanel: View {
       if lm.tab == "desk" {
         HStack(spacing: 6) {
           ForEach([("all", "全部"), ("folder", "文件夹"), ("doc", "文档"), ("image", "图片"), ("other", "其他")], id: \.0) { k, n in
-            Button(n) { lm.filter = k }.buttonStyle(ChipStyle(on: lm.filter == k))
+            Button(L(n)) { lm.filter = k }.buttonStyle(ChipStyle(on: lm.filter == k))
           }
           Spacer()
           Picker("", selection: $lm.sort) { Text(L("名称")).tag("name"); Text(L("最近修改")).tag("mtime") }.pickerStyle(.segmented).frame(width: 150).labelsHidden()
@@ -149,7 +149,7 @@ struct LauncherPanel: View {
       MaybeScroll {
         let items = lm.list
         if items.isEmpty {
-          Text(lm.query.isEmpty ? (lm.tab == "apps" ? "加载中…" : "桌面上没有东西") : "没有找到").font(Font2.ui(12.5)).foregroundStyle(pal.text3).padding(30)
+          Text(lm.query.isEmpty ? (lm.tab == "apps" ? L("加载中…") : L("桌面上没有东西")) : L("没有找到")).font(Font2.ui(12.5)).foregroundStyle(pal.text3).padding(30)
         }
         LazyVGrid(columns: cols, spacing: 10) {
           ForEach(items) { it in cell(it) }
@@ -161,8 +161,8 @@ struct LauncherPanel: View {
     .background(RoundedRectangle(cornerRadius: 20).fill(.black.opacity(0.45)))
     .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(pal.line, lineWidth: 0.5))
     .onAppear { lm.load() }
-    .alert(lm.iconsHidden ? "显示桌面图标？" : "隐藏桌面图标？", isPresented: $askHide) {
-      Button(lm.iconsHidden ? "显示" : "隐藏") { Task { await lm.setIconsHidden(!lm.iconsHidden) } }
+    .alert(lm.iconsHidden ? L("显示桌面图标？") : L("隐藏桌面图标？"), isPresented: $askHide) {
+      Button(lm.iconsHidden ? L("显示") : L("隐藏")) { Task { await lm.setIconsHidden(!lm.iconsHidden) } }
       Button(L("取消"), role: .cancel) {}
     } message: {
       Text(L("文件不会动，还在桌面文件夹里。需要重启一下访达才生效（会关掉已打开的访达窗口）。"))
@@ -188,7 +188,7 @@ struct LauncherPanel: View {
       Button(L("在访达中显示")) { lm.reveal(it) }
     }
     .onDrag { NSItemProvider(object: URL(fileURLWithPath: it.path) as NSURL) }
-    .help(it.name + (it.cloud ? "\n在 iCloud 里，打开时会下载" : "") + "\n双击打开 · 右键在访达中显示")
+    .help(it.name + (it.cloud ? "\n" + L("在 iCloud 里，打开时会下载") : "") + "\n" + L("双击打开 · 右键在访达中显示"))
   }
 }
 

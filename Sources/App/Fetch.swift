@@ -67,7 +67,7 @@ enum Fetch {
       }
       for await r in g { if let r { lists.append(r); okCount += 1 } }
     }
-    if okCount == 0 { throw HTTPError(message: "新闻源全部请求失败") }
+    if okCount == 0 { throw HTTPError(message: L("新闻源全部请求失败")) }
     return NewsState(items: Array(News.merge(lists).prefix(80)), at: nowMs())
   }
 
@@ -75,7 +75,7 @@ enum Fetch {
   static func weather(_ city: (name: String, lat: Double, lon: Double)) async throws -> Weather {
     let d = try await get(WeatherAPI.url(lat: city.lat, lon: city.lon))
     guard let j = (try? JSONSerialization.jsonObject(with: d)) as? JSON, let w = WeatherAPI.parse(j, city: city.name) else {
-      throw HTTPError(message: "天气数据看不懂")
+      throw HTTPError(message: L("天气数据看不懂"))
     }
     return w
   }
@@ -102,7 +102,7 @@ enum Fetch {
     let evs = eventStore.events(matching: pred).prefix(400).map { e -> CalEvent in
       let c = e.calendar?.color?.usingColorSpace(.sRGB)
       return CalEvent(
-        id: e.eventIdentifier ?? e.title ?? "", title: (e.title ?? "").isEmpty ? "（无标题）" : e.title!,
+        id: e.eventIdentifier ?? e.title ?? "", title: (e.title ?? "").isEmpty ? L("（无标题）") : e.title!,
         start: e.startDate.timeIntervalSince1970 * 1000, end: e.endDate.timeIntervalSince1970 * 1000,
         allDay: e.isAllDay, location: e.location ?? "", calendar: e.calendar?.title ?? "",
         color: c.map { [Int($0.redComponent * 255), Int($0.greenComponent * 255), Int($0.blueComponent * 255)] })
@@ -140,13 +140,13 @@ enum Fetch {
   // —— 邮件：「邮件」没开就不去读（直接 tell 会把它启动起来，没登录账户时还会弹设置向导） ——
   static func mail() async -> MailState {
     let running = NSWorkspace.shared.runningApplications.contains { $0.bundleIdentifier == "com.apple.mail" }
-    guard running else { return MailState(ok: false, error: "「邮件」App 没有打开", notRunning: true) }
+    guard running else { return MailState(ok: false, error: L("「邮件」App 没有打开"), notRunning: true) }
     let r = await run("/usr/bin/osascript", ["-e", MailAPI.script()], timeout: 60)
     if r.code != 0 {
       let msg = r.err.trimmed()
-      if msg.test("-1743|not allowed|不允许") { return MailState(ok: false, error: "没有控制「邮件」的权限，请在「系统设置 → 隐私与安全性 → 自动化」里允许") }
-      if msg.test("-1712|timed out|超时") { return MailState(ok: false, error: "「邮件」App 响应超时") }
-      return MailState(ok: false, error: "读取邮件失败：" + (msg.components(separatedBy: "\n").last ?? msg))
+      if msg.test("-1743|not allowed|不允许") { return MailState(ok: false, error: L("没有控制「邮件」的权限，请在「系统设置 → 隐私与安全性 → 自动化」里允许")) }
+      if msg.test("-1712|timed out|超时") { return MailState(ok: false, error: L("「邮件」App 响应超时")) }
+      return MailState(ok: false, error: L("读取邮件失败：") + (msg.components(separatedBy: "\n").last ?? msg))
     }
     let p = MailAPI.parseOutput(r.out)
     return MailState(ok: true, unread: p.unread, items: p.items)
@@ -155,13 +155,13 @@ enum Fetch {
   enum MailBody { case ok(name: String, email: String, subject: String, body: String), failed(String) }
 
   static func mailBody(_ id: String, maxChars: Int = 8000) async -> MailBody {
-    guard NSWorkspace.shared.runningApplications.contains(where: { $0.bundleIdentifier == "com.apple.mail" }) else { return .failed("「邮件」App 没有打开") }
+    guard NSWorkspace.shared.runningApplications.contains(where: { $0.bundleIdentifier == "com.apple.mail" }) else { return .failed(L("「邮件」App 没有打开")) }
     let r = await run("/usr/bin/osascript", ["-e", MailAPI.bodyScript, id, String(maxChars)], timeout: 60)
     if r.code != 0 {
-      if r.err.test("-1743|not allowed|不允许") { return .failed("没有控制「邮件」的权限，请在「系统设置 → 隐私与安全性 → 自动化」里允许") }
-      return .failed("读取邮件失败：" + (r.err.trimmed().components(separatedBy: "\n").last ?? ""))
+      if r.err.test("-1743|not allowed|不允许") { return .failed(L("没有控制「邮件」的权限，请在「系统设置 → 隐私与安全性 → 自动化」里允许")) }
+      return .failed(L("读取邮件失败：") + (r.err.trimmed().components(separatedBy: "\n").last ?? ""))
     }
-    guard let b = MailAPI.parseBody(r.out) else { return .failed("在「邮件」里没找到这封邮件（可能已经被移走或删除）") }
+    guard let b = MailAPI.parseBody(r.out) else { return .failed(L("在「邮件」里没找到这封邮件（可能已经被移走或删除）")) }
     return .ok(name: b.name, email: b.email, subject: b.subject, body: b.body)
   }
 
@@ -190,7 +190,7 @@ enum Fetch {
     let r = await run("/usr/bin/pmset", ["-g", "accps"], timeout: 5)
     var merged: [BatteryDevice] = []
     for var d in BatteryInfo.parsePmset(r.out) {
-      if d.name.isEmpty { d.name = "耳机盒"; d.type = "headphones" }
+      if d.name.isEmpty { d.name = L("耳机盒"); d.type = "headphones" }
       if let i = merged.firstIndex(where: { $0.name == d.name }) { merged[i].pct = min(merged[i].pct, d.pct); continue }
       merged.append(d)
     }
@@ -200,8 +200,8 @@ enum Fetch {
   // —— 量化系统 ——
   static func quant(_ dir: String) async -> QuantState {
     let path = dir + "/dashboard/state.json"
-    guard let d = FileManager.default.contents(atPath: path) else { return QuantState(ok: false, error: "没找到量化系统的数据文件：\(path)") }
-    guard let j = QuantAPI.readJSON(d) else { return QuantState(ok: false, error: "读取失败：数据看不懂") }
+    guard let d = FileManager.default.contents(atPath: path) else { return QuantState(ok: false, error: L("没找到量化系统的数据文件：") + path) }
+    guard let j = QuantAPI.readJSON(d) else { return QuantState(ok: false, error: L("读取失败：数据看不懂")) }
     var s = QuantAPI.summarize(j)
     s.dir = dir
     s.scan = FileManager.default.contents(atPath: dir + "/dashboard/scan_cache.json").flatMap(QuantAPI.readJSON).flatMap(QuantAPI.summarizeScan)

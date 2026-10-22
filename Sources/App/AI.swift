@@ -36,7 +36,14 @@ enum Keychain {
 enum DeepSeek {
   static let endpoint = URL(string: "https://api.deepseek.com/chat/completions")!
   static let models = [("deepseek-chat", "对话（快、便宜）"), ("deepseek-reasoner", "推理（慢一点，会先想）")]
-  static let system = [
+  static var system: String { appLang == "en" ? systemEn : systemZh }
+  static let systemEn = [
+    "You are the butler on the user's desktop. Answer in English, briefly and directly: conclusion first, then the reason.",
+    "The user's information (quotes, holdings, calendar, mail, etc.) is attached before the question, possibly in Chinese. Answer only from it; if something isn't there, say so — never make things up.",
+    "For stocks, give objective analysis only. Never recommend buying, selling, holding, adding or trimming.",
+    "Only quote numbers exactly as given; do not convert or invent numbers.",
+  ].joined(separator: "\n")
+  static let systemZh = [
     "你是用户桌面上的管家。用简体中文回答，简短直接，先给结论再给理由。",
     "用户的信息（行情、持仓、日程、邮件等）会附在问题前面，只依据这些信息回答；没有的信息就说没有，不要编造。",
     "涉及股票只做客观分析，不给买入、卖出、持有、加仓、减仓的建议。",
@@ -57,16 +64,16 @@ enum DeepSeek {
   static func explain(_ status: Int, _ body: String) -> String {
     let detail = ((try? JSONSerialization.jsonObject(with: Data(body.utf8))) as? JSON).flatMap { ($0["error"] as? JSON)?["message"] as? String } ?? ""
     switch status {
-    case 401: return "DeepSeek 的 API Key 不对或已失效：到「设置 → AI」里重新填一次"
-    case 402: return "DeepSeek 账户余额不足：去 platform.deepseek.com 充值后再试"
-    case 429: return "DeepSeek 请求太频繁，等几秒再试"
-    case 500...: return "DeepSeek 服务暂时不可用（\(status)），稍后再试"
-    default: return "DeepSeek 请求失败（\(status)）" + (detail.isEmpty ? "" : "：" + detail)
+    case 401: return L("DeepSeek 的 API Key 不对或已失效：到「设置 → AI」里重新填一次")
+    case 402: return L("DeepSeek 账户余额不足：去 platform.deepseek.com 充值后再试")
+    case 429: return L("DeepSeek 请求太频繁，等几秒再试")
+    case 500...: return L("DeepSeek 服务暂时不可用（%@），稍后再试", "\(status)")
+    default: return L("DeepSeek 请求失败（%@）", "\(status)") + (detail.isEmpty ? "" : ": " + detail)
     }
   }
 
   private static func request(_ messages: [[String: String]], model: String, stream: Bool, maxTokens: Int? = nil) throws -> URLRequest {
-    guard let key = Keychain.read() else { throw Failure(message: "还没有设置 DeepSeek 的 API Key：到「设置 → AI」里粘贴（Key 只存在你这台电脑的钥匙串里）") }
+    guard let key = Keychain.read() else { throw Failure(message: L("还没有设置 DeepSeek 的 API Key：到「设置 → AI」里粘贴（Key 只存在你这台电脑的钥匙串里）")) }
     var r = URLRequest(url: endpoint)
     r.httpMethod = "POST"
     r.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -114,7 +121,7 @@ enum DeepSeek {
       let (d, resp) = try await session.data(for: request([["role": "user", "content": "你好"]], model: model, stream: false, maxTokens: 5))
       let st = (resp as? HTTPURLResponse)?.statusCode ?? 0
       return st == 200 ? nil : explain(st, String(decoding: d, as: UTF8.self))
-    } catch { return "连不上 DeepSeek：" + error.localizedDescription }
+    } catch { return L("连不上 DeepSeek：") + error.localizedDescription }
   }
 }
 
@@ -138,7 +145,7 @@ enum ClaudeCLI {
   static func run(prompt: String, session: String?, cwd: String, permission: String, process: @escaping @MainActor (Process) -> Void,
                   onEvent: @escaping @MainActor (ClaudeEvent) -> Void) async {
     guard let exe = path else {
-      await onEvent(.done(failed: true, text: "没找到 Claude Code 命令行（claude）。装好 Claude Code 后再试，或换成 DeepSeek"))
+      await onEvent(.done(failed: true, text: L("没找到 Claude Code 命令行（claude）。装好 Claude Code 后再试，或换成 DeepSeek")))
       return
     }
     let p = Process()
@@ -153,7 +160,7 @@ enum ClaudeCLI {
     p.standardError = FileHandle.nullDevice
     p.standardInput = FileHandle.nullDevice
     do { try p.run() } catch {
-      await onEvent(.done(failed: true, text: "启动 Claude Code 失败：" + error.localizedDescription))
+      await onEvent(.done(failed: true, text: L("启动 Claude Code 失败：") + error.localizedDescription))
       return
     }
     await process(p)
@@ -185,7 +192,7 @@ final class Chat: ObservableObject, Identifiable {
   @Published var items: [TItem] = []
   @Published var busy = false
   @Published var pending: PendingActions?
-  @Published var title = "新对话"
+  @Published var title = L("新对话")
   let agent: String                      // deepseek / claude
   var claudeSession: String?
   var cwd: String
@@ -235,10 +242,10 @@ final class Chat: ObservableObject, Identifiable {
           }
           self.history.append(["role": "assistant", "content": full])
         } catch is CancellationError {
-          self.items.append(TItem(kind: .notice, text: "已停止"))
+          self.items.append(TItem(kind: .notice, text: L("已停止")))
         } catch {
           self.history.removeLast()      // 这条没发成功，别留在历史里
-          if (error as? URLError)?.code == .cancelled { self.items.append(TItem(kind: .notice, text: "已停止")) }
+          if (error as? URLError)?.code == .cancelled { self.items.append(TItem(kind: .notice, text: L("已停止"))) }
           else { self.items.append(TItem(kind: .error, text: error.localizedDescription)) }
         }
         if at < self.items.count, self.items[at].kind == .ai, self.items[at].text.isEmpty { self.items.remove(at: at) }
@@ -260,7 +267,7 @@ final class Chat: ObservableObject, Identifiable {
     guard answer.contains("```actions") else { return }
     let r = Actions.extract(answer)
     if let raw = r.raw { pending = PendingActions(list: Actions.checkAll(raw), withMail: withMail) }
-    else if let e = r.error { items.append(TItem(kind: .notice, text: e + "，没有执行任何操作")) }
+    else if let e = r.error { items.append(TItem(kind: .notice, text: e + L("，没有执行任何操作"))) }
   }
 
   /** 显示用的文字：actions 块不给人看（流式输出到一半也先藏起来） */
@@ -342,7 +349,8 @@ extension DeskModel {
     let allow = nlActions
     let block = parts.isEmpty ? "" : "下面是我电脑桌面上的信息，供你参考（行情是延迟数据；涉及股票时只做客观分析，不要给买入、卖出、持有建议）：\n\n" + parts.joined(separator: "\n\n") + "\n\n"
     let spec = allow ? Actions.spec + "\n\n" : ""
-    return (block.isEmpty && spec.isEmpty ? text : "\(block)\(spec)我的问题：\(text)", allow)
+    let lang = appLang == "en" ? "（请用英文回答 / Please answer in English.）\n" : ""
+    return (block.isEmpty && spec.isEmpty ? lang + text : "\(block)\(spec)\(lang)我的问题：\(text)", allow)
   }
 
   // —— 办事 ——
@@ -353,16 +361,16 @@ extension DeskModel {
       let gbk = CFStringConvertEncodingToNSStringEncoding(CFStringEncoding(CFStringEncodings.GB_18030_2000.rawValue))
       key = SymbolSearch.pick(String(data: d, encoding: String.Encoding(rawValue: gbk)) ?? "", query: input)
     }
-    guard let key else { throw Fetch.HTTPError(message: "认不出「\(input)」。A 股填 6 位数字，港股填 5 位数字，美股填字母代码，或者写全称") }
-    guard let q = try await Fetch.quotes([key])[key], !q.failed else { throw Fetch.HTTPError(message: "没查到「\(input)」的行情") }
+    guard let key else { throw Fetch.HTTPError(message: L("认不出「%@」。A 股填 6 位数字，港股填 5 位数字，美股填字母代码，或者写全称", input)) }
+    guard let q = try await Fetch.quotes([key])[key], !q.failed else { throw Fetch.HTTPError(message: L("没查到「%@」的行情", input)) }
     return q
   }
 
   func addWatch(_ q: Quote) -> String {
-    if store.watch.contains(q.key) { return "「\(q.name)」已经在自选里了" }
+    if store.watch.contains(q.key) { return L("「%@」已经在自选里了", q.name) }
     quotes[q.key] = q
     store.set(["watch": store.watch + [q.key]])
-    return "已加入自选：\(q.name)"
+    return L("已加入自选：%@", q.name)
   }
 
   func runActions(_ list: [Action], chat: Chat?) async -> [(ok: Bool, text: String)] {
@@ -371,13 +379,13 @@ extension DeskModel {
       switch a.kind {
       case "watch.add":
         do { out.append((true, addWatch(try await resolveSymbol(a.p["query"]!)))) } catch { out.append((false, error.localizedDescription)) }
-      case "nav": page = a.p["page"]!; out.append((true, "已切换页面"))
-      case "refresh": kick(a.p["what"]!); out.append((true, "已刷新"))
-      case "mail.digest": await digestMail(into: chat); out.append((true, "已开始概括邮件，结果在上面的对话里"))
-      case "open.url": openURL(a.p["url"]!); out.append((true, "已在浏览器里打开"))
+      case "nav": page = a.p["page"]!; out.append((true, L("已切换页面")))
+      case "refresh": kick(a.p["what"]!); out.append((true, L("已刷新")))
+      case "mail.digest": await digestMail(into: chat); out.append((true, L("已开始概括邮件，结果在上面的对话里")))
+      case "open.url": openURL(a.p["url"]!); out.append((true, L("已在浏览器里打开")))
       default:
         let r = Actions.storePatch(a, store: store.data, quotes: quotes)
-        if let patch = r.patch { store.set(patch); out.append((true, r.note ?? "已完成")) } else { out.append((false, r.error ?? "做不了")) }
+        if let patch = r.patch { store.set(patch); out.append((true, r.note ?? L("已完成"))) } else { out.append((false, r.error ?? L("做不了"))) }
       }
     }
     return out
@@ -398,7 +406,7 @@ extension DeskModel {
     var picks = m.items.filter { important.contains($0.id) }.prefix(max).map { $0 }
     let fallback = picks.isEmpty
     if fallback { picks = Array(m.items.prefix(max)) }
-    toast = "正在读取 \(picks.count) 封\(fallback ? "最近的" : "重要")邮件的正文…"
+    toast = L(fallback ? "正在读取 %@ 封最近的邮件的正文…" : "正在读取 %@ 封重要邮件的正文…", "\(picks.count)")
     var bodies: [String] = []
     for x in picks {
       if case .ok(let name, let email, let subject, let body) = await Fetch.mailBody(x.id, maxChars: 1500) {
@@ -408,7 +416,7 @@ extension DeskModel {
     guard !bodies.isEmpty else { toast = L("邮件正文读取失败（「邮件」App 要开着）"); return }
     let text = DeskModel.askMany + (fallback ? "（没有命中「重要」规则，这是最近的几封。）" : "") + "\n\n" + bodies.enumerated().map { "【\($0.offset + 1)】\n\($0.element)" }.joined(separator: "\n\n———\n\n")
     let c = chat ?? overlayChat
-    c.send(shown: "概括 \(bodies.count) 封\(fallback ? "最近的" : "重要")邮件", prompt: text, model: deepseekModel)
+    c.send(shown: L(fallback ? "概括 %@ 封最近的邮件" : "概括 %@ 封重要邮件", "\(bodies.count)"), prompt: text + (appLang == "en" ? "\n\nPlease answer in English." : ""), model: deepseekModel)
     toast = nil
   }
 
@@ -431,13 +439,13 @@ extension DeskModel {
     guard !runningReminders.contains(id), let r = (store.data["reminders"] as? [JSON])?.first(where: { $0["id"] as? String == id }) else { return }
     runningReminders.insert(id)
     patchReminder(id, ["lastRunDay": Reminders.dayKey(nowMs()), "running": true, "lastError": NSNull()])
-    let title = (r["title"] as? String).flatMap { $0.isEmpty ? nil : $0 } ?? "提醒"
+    let title = (r["title"] as? String).flatMap { $0.isEmpty ? nil : $0 } ?? L("提醒")
     let prompt = (r["prompt"] as? String ?? "").trimmed()
     Task { @MainActor in
       defer { self.runningReminders.remove(id) }
       if prompt.isEmpty {
         self.patchReminder(id, ["running": false, "lastResult": NSNull(), "lastRunAt": nowMs()])
-        self.notify(title, "时间到了")
+        self.notify(title, L("时间到了"))
         return
       }
       let c = r["context"] as? JSON ?? [:]
@@ -452,7 +460,7 @@ extension DeskModel {
       }
       if let err = chat.items.last(where: { $0.kind == .error }) {
         self.patchReminder(id, ["running": false, "lastError": err.text, "lastRunAt": nowMs()])
-        self.notify("\(title)（AI 没有回复）", err.text)
+        self.notify(title + L("（AI 没有回复）"), err.text)
       } else {
         let text = answer.trimmed()
         self.patchReminder(id, ["running": false, "lastResult": text.isEmpty ? NSNull() : text, "lastRunAt": nowMs()])

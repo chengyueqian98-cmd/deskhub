@@ -169,4 +169,35 @@ extension DeskModel {
   func openPrivacy(_ pane: String) {
     if let u = URL(string: "x-apple.systempreferences:com.apple.preference.security?\(pane)") { NSWorkspace.shared.open(u) }
   }
+
+  // —— 检查更新（一天最多问一次 GitHub；有新版只提示，不自动下载安装） ——
+  static var currentVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0" }
+
+  func checkUpdate(manual: Bool = false) async {
+    let last = num(store.data["lastUpdateCheck"]) ?? 0
+    guard manual || nowMs() - last > 20 * 3600e3, !measuring, !isSnapshot else { return }
+    if manual { updateStatus = L("正在检查…") }
+    guard let d = try? await Fetch.get(Update.latestURL, headers: ["Accept": "application/vnd.github+json"]),
+          let j = (try? JSONSerialization.jsonObject(with: d)) as? JSON else {
+      if manual { updateStatus = L("检查失败，稍后再试") }
+      return
+    }
+    store.set(["lastUpdateCheck": nowMs()])
+    update = Update.newer(Update.parse(j), than: DeskModel.currentVersion, skip: store.data["skipVersion"] as? String)
+    if let u = update {
+      updateStatus = L("有新版本 %@", u.version)
+      // 每个新版本只发一次系统通知
+      if store.data["notifiedVersion"] as? String != u.version {
+        store.set(["notifiedVersion": u.version])
+        notify(L("桌面信息中心有新版本 %@", u.version), L("在浮层右上角或「设置 → 外观」里点一下去下载"))
+      }
+    } else if manual { updateStatus = L("已经是最新版本") }
+  }
+
+  func skipUpdate() {
+    guard let u = update else { return }
+    store.set(["skipVersion": u.version])
+    update = nil
+    updateStatus = ""
+  }
 }

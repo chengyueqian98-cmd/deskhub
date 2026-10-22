@@ -96,7 +96,7 @@ struct MarketPage: View {
                 HStack(spacing: 5) {
                   Text(q?.name ?? key).font(Font2.ui(13, .medium)).foregroundStyle(pal.text)
                   Text(q?.code ?? Market.displayCode(key)).font(Font2.num(10.5)).foregroundStyle(pal.text3)
-                  Text(q?.index == true ? "指数" : ["cn": "A 股", "hk": "港股", "us": "美股"][q?.market ?? ""] ?? "").font(Font2.ui(10.5)).foregroundStyle(pal.text3)
+                  Text(L(q?.index == true ? "指数" : ["cn": "A 股", "hk": "港股", "us": "美股"][q?.market ?? ""] ?? "")).font(Font2.ui(10.5)).foregroundStyle(pal.text3)
                 }
               }.buttonStyle(.plain)
               Text(F.price(q?.price)).font(Font2.num(13)).foregroundStyle(pal.text).gridColumnAlignment(.trailing)
@@ -111,7 +111,7 @@ struct MarketPage: View {
                 CommitField(placeholder: "—", value: plan.sell.map(jsNum) ?? "") { setPlan(key, "sell", $0) }
                 VStack(alignment: .leading, spacing: 1) {
                   Text(ds.isEmpty ? "—" : ds).font(Font2.ui(11.5, ds.test("已低于|已高于") ? .semibold : .regular)).foregroundStyle(ds.test("已低于|已高于") ? pal.accent : pal.text2)
-                  if shares > 0 { Text("上限≈\(shares) 股").font(Font2.ui(10.5)).foregroundStyle(pal.text3) }
+                  if shares > 0 { Text(L("上限≈%@ 股", "\(shares)")).font(Font2.ui(10.5)).foregroundStyle(pal.text3) }
                 }
               }
               CommitField(placeholder: L("为什么看它"), value: plan.note, width: 150, numeric: false) { setPlan(key, "note", $0) }
@@ -135,7 +135,7 @@ struct MarketPage: View {
         Text(L("单票上限")).foregroundStyle(pal.text2)
         CommitField(placeholder: "20", value: jsNum(store.maxPerPct), width: 50) { model.store.set(["maxPerPct": min(100, max(1, Double($0) ?? 20))]) }
         Text("%").foregroundStyle(pal.text2)
-        if budget > 0 { Text("· 每只最多 \(F.money(budget, 0))").foregroundStyle(pal.text3) }
+        if budget > 0 { Text(L("· 每只最多 %@", F.money(budget, 0))).foregroundStyle(pal.text3) }
       }.font(Font2.ui(12))
       Note(text: L("主页显示能放下的前几个；有市场开盘时每 5 秒刷新，都收盘时每分钟刷新；港股延迟约 15 分钟。点名称看详情和 K 线。提醒只是告诉你行情变化，不代表任何买卖建议；买入价、卖出价、观察都是你自己填的。"))
       DisclosureGroup(isExpanded: $quantOpen) { QuantFold(model: model, strat: $strat).padding(.top, 10) } label: {
@@ -146,9 +146,9 @@ struct MarketPage: View {
   }
 
   private var quantSummary: String {
-    guard let q = model.quant else { return "量化账户 · 加载中" }
-    guard q.ok else { return "量化账户 · 没读到数据" }
-    return "量化账户 · \(q.running == true ? "运行中" : "已停机") · 总资产 \(F.money(q.account?.total, 0))"
+    guard let q = model.quant else { return L("量化账户 · 加载中") }
+    guard q.ok else { return L("量化账户 · 没读到数据") }
+    return L(q.running == true ? "量化账户 · 运行中 · 总资产 %@" : "量化账户 · 已停机 · 总资产 %@", F.money(q.account?.total, 0))
   }
 
   private func addSymbol() {
@@ -166,7 +166,7 @@ struct MarketPage: View {
     else if let n = Double(v.trimmed()), n > 0 { p[field] = n } else { p[field] = NSNull() }
     all[key] = p
     model.store.set(["plans": all])
-    model.toast = field == "note" ? "观察已记下" : "已保存"
+    model.toast = field == "note" ? L("观察已记下") : L("已保存")
   }
 
   private func moveWatch(_ i: Int, _ d: Int) {
@@ -196,24 +196,24 @@ struct QuantFold: View {
       let a = q.account
       VStack(alignment: .leading, spacing: 14) {
         HStack(spacing: 10) {
-          Text(q.running == true ? "量化系统运行中" : "量化系统已停机").font(Font2.ui(11.5, .medium)).foregroundStyle(q.running == true ? pal.green : pal.text2)
+          Text(q.running == true ? L("量化系统运行中") : L("量化系统已停机")).font(Font2.ui(11.5, .medium)).foregroundStyle(q.running == true ? pal.green : pal.text2)
             .padding(.horizontal, 8).padding(.vertical, 3).background(Capsule().fill(pal.fill))
-          Text("数据时间 \(q.updatedAt ?? "—")（原系统本机时间）").font(Font2.ui(12)).foregroundStyle(pal.text3)
+          Text(L("数据时间 %@（原系统本机时间）", q.updatedAt ?? "—")).font(Font2.ui(12)).foregroundStyle(pal.text3)
           Spacer()
           if q.running == true { Button(L("打开原看板 ↗")) { model.openURL("http://127.0.0.1:8765") }.buttonStyle(PillButton()) }
-          if let r = q.reports.first { Button("最新日报 \(r.date.suffix(5))") { NSWorkspace.shared.open(URL(fileURLWithPath: r.path)) }.buttonStyle(PillButton()) }
+          if let r = q.reports.first { Button(L("最新日报 %@", String(r.date.suffix(5)))) { NSWorkspace.shared.open(URL(fileURLWithPath: r.path)) }.buttonStyle(PillButton()) }
         }
         if q.running != true {
-          banner("⏸ 量化系统现在没有运行，推送、30 秒刷新、收盘日报都停了。下面是它停机前最后一次写出的数据，价格不是最新的。", pal.orange)
+          banner(L("⏸ 量化系统现在没有运行，推送、30 秒刷新、收盘日报都停了。下面是它停机前最后一次写出的数据，价格不是最新的。"), pal.orange)
         }
         if let r = q.risk, r.status == "exit" {
-          banner("⚠︎ 按你给量化系统定的规则，账户已进入清仓警戒：从最高点回撤 \(r.drawdown.map(jsNum) ?? "—")%，超过了 \(r.exitLine.map(jsNum) ?? "—")% 的清仓线。系统只提示、不下单，要不要操作、要不要改规则，由你自己决定。", pal.red)
+          banner(L("⚠︎ 按你给量化系统定的规则，账户已进入清仓警戒：从最高点回撤 %@%%，超过了 %@%% 的清仓线。系统只提示、不下单，要不要操作、要不要改规则，由你自己决定。", r.drawdown.map(jsNum) ?? "—", r.exitLine.map(jsNum) ?? "—"), pal.red)
         }
         HStack(spacing: 12) {
-          stat("总资产", F.money(a?.total), "初始资金 \(F.money(a?.initial))")
-          stat("累计盈亏", F.signed(a?.pnl), F.pct(a?.pnlPct))
-          stat("今日盈亏", F.signed(a?.dayPnl), "按（现价 − 昨收）× 股数")
-          stat("仓位", "\(a?.posRatio.map(jsNum) ?? "—")%", "市值 \(F.money(a?.mv, 0)) · 现金 \(F.money(a?.cash, 0))" + myShare(a?.mv))
+          stat(L("总资产"), F.money(a?.total), L("初始资金 %@", F.money(a?.initial)))
+          stat(L("累计盈亏"), F.signed(a?.pnl), F.pct(a?.pnlPct))
+          stat(L("今日盈亏"), F.signed(a?.dayPnl), L("按（现价 − 昨收）× 股数"))
+          stat(L("仓位"), "\(a?.posRatio.map(jsNum) ?? "—")%", L("市值 %@ · 现金 %@", F.money(a?.mv, 0), F.money(a?.cash, 0)) + myShare(a?.mv))
         }
         if let r = q.risk {
           VStack(alignment: .leading, spacing: 8) {
@@ -221,15 +221,15 @@ struct QuantFold: View {
               Text(L("风控")).font(Font2.ui(14, .semibold)).foregroundStyle(pal.text)
               Text(F.riskText(r.status)).font(Font2.ui(11, .medium)).foregroundStyle(r.status == "normal" ? pal.text2 : pal.orange).padding(.horizontal, 7).padding(.vertical, 2).background(Capsule().fill(pal.fill2))
               Spacer()
-              Text("最高资产 \(F.money(r.peak)) · 单票止损线 \(r.stopLoss.map(jsNum) ?? "—")%").font(Font2.ui(12)).foregroundStyle(pal.text3)
+              Text(L("最高资产 %@ · 单票止损线 %@%%", F.money(r.peak), r.stopLoss.map(jsNum) ?? "—")).font(Font2.ui(12)).foregroundStyle(pal.text3)
             }
             Gauge(risk: r)
           }
         }
-        Text("持仓 · \(q.positions.count) 只").font(Font2.ui(14, .semibold)).foregroundStyle(pal.text)
+        Text(L("持仓 · %@ 只", "\(q.positions.count)")).font(Font2.ui(14, .semibold)).foregroundStyle(pal.text)
         ForEach(Array(q.positions.enumerated()), id: \.offset) { _, p in PositionCard(model: model, p: effective(p)) }
         if !q.watchlist.isEmpty {
-          Text("观察池 · \(q.watchlist.count) 只（量化系统筛的，只读；点「加自选」就能在上面填价）").font(Font2.ui(14, .semibold)).foregroundStyle(pal.text)
+          Text(L("观察池 · %@ 只（量化系统筛的，只读；点「加自选」就能在上面填价）", "\(q.watchlist.count)")).font(Font2.ui(14, .semibold)).foregroundStyle(pal.text)
           pickTable(q.watchlist, scan: false)
         }
         if let s = q.scan {
@@ -249,10 +249,10 @@ struct QuantFold: View {
           }
           if q.reports.isEmpty { Text(L("没有日报")).font(Font2.ui(12)).foregroundStyle(pal.text3) }
         }
-        Note(text: "数据来自 \(q.dir)，这里只读不改。和原看板相比修正了两处显示口径：今日盈亏按（现价 − 昨收）× 股数计算；仓位按市值 ÷ 总资产计算。")
+        Note(text: L("数据来自 %@，这里只读不改。和原看板相比修正了两处显示口径：今日盈亏按（现价 − 昨收）× 股数计算；仓位按市值 ÷ 总资产计算。", q.dir))
       }
     } else {
-      Text(model.quant?.error.map { $0 + "\n可以在「设置」里改量化系统所在的文件夹。" } ?? "加载中…").font(Font2.ui(12.5)).foregroundStyle(pal.orange)
+      Text(model.quant?.error.map { $0 + "\n" + L("可以在「设置」里改量化系统所在的文件夹。") } ?? L("加载中…")).font(Font2.ui(12.5)).foregroundStyle(pal.orange)
     }
   }
 
@@ -273,7 +273,7 @@ struct QuantFold: View {
   /** 第二套口径：按你自己填的账户金额算占比，只显示，不替代量化系统的口径 */
   private func myShare(_ mv: Double?) -> String {
     guard let s = Plans.shareOf(mv, model.store.acctSize) else { return "" }
-    return "\n按你填的 \(F.money(model.store.acctSize, 0)) 算 \(jsNum(s))%"
+    return "\n" + L("按你填的 %@ 算 %@%%", F.money(model.store.acctSize, 0), jsNum(s))
   }
 
   /** 手改持仓：只覆盖这一张卡片的股数 / 成本，市值和盈亏按现价重算 */
@@ -309,11 +309,11 @@ struct QuantFold: View {
               Text(w.revGrow.map { jsNum($0) + "%" } ?? "—"); Text(w.profitGrow.map { jsNum($0) + "%" } ?? "—")
             } else {
               Text(w.ma10.map(jsNum) ?? "—"); Text(w.ma20.map(jsNum) ?? "—")
-              Text(["up": "上升", "down": "下降", "flat": "震荡"][w.trend] ?? "—")
-              Text(["hold": "持有", "enter": "入场", "add": "加仓", "exit": "离场"][w.signal] ?? (w.signal.isEmpty ? "—" : w.signal))
+              Text(L(["up": "上升", "down": "下降", "flat": "震荡"][w.trend] ?? "—"))
+              Text(L(["hold": "持有", "enter": "入场", "add": "加仓", "exit": "离场"][w.signal] ?? (w.signal.isEmpty ? "—" : w.signal)))
             }
             Button(L("加自选")) {
-              Task { do { model.toast = model.addWatch(try await model.resolveSymbol(w.code)) + "，上面可以填买入价了" } catch { model.toast = error.localizedDescription } }
+              Task { do { model.toast = model.addWatch(try await model.resolveSymbol(w.code)) + L("，上面可以填买入价了") } catch { model.toast = error.localizedDescription } }
             }.buttonStyle(MiniButton())
           }
           .font(Font2.ui(12.5)).foregroundStyle(pal.text2)
@@ -366,11 +366,11 @@ struct PositionCard: View {
           Text(F.pct(x.pct)).font(Font2.num(12.5, .semibold)).foregroundStyle(pal.change(x.pct, colors: model.store.colors))
         }
         SwiftUI.Grid(alignment: .leading, horizontalSpacing: 14, verticalSpacing: 4) {
-          row(L("持股"), "\(x.shares.map(jsNum) ?? "—") 股"); row(L("成本"), x.cost.map(jsNum) ?? "—"); row(L("市值"), F.money(x.mv))
-          row(L("浮动盈亏"), "\(F.signed(x.pnl))（\(F.pct(x.pnlPct))）"); row(L("今日盈亏"), F.signed(x.dayPnl))
+          row(L("持股"), L("%@ 股", x.shares.map(jsNum) ?? "—")); row(L("成本"), x.cost.map(jsNum) ?? "—"); row(L("市值"), F.money(x.mv))
+          row(L("浮动盈亏"), "\(F.signed(x.pnl)) (\(F.pct(x.pnlPct)))"); row(L("今日盈亏"), F.signed(x.dayPnl))
           row("MA10 / MA20", "\(x.ma10.map(jsNum) ?? "—") / \(x.ma20.map(jsNum) ?? "—")")
-          row(L("距持仓最高价"), "\(x.trailPct.map { jsNum($0) + "%" } ?? "—")（高 \(x.maxPrice.map(jsNum) ?? "—")）")
-          if let s = Plans.shareOf(x.mv, model.store.acctSize) { row("占 \(F.money(model.store.acctSize, 0)) 的", "\(jsNum(s))%") }
+          row(L("距持仓最高价"), L("%@（高 %@）", x.trailPct.map { jsNum($0) + "%" } ?? "—", x.maxPrice.map(jsNum) ?? "—"))
+          if let s = Plans.shareOf(x.mv, model.store.acctSize) { row(L("占 %@ 的", F.money(model.store.acctSize, 0)), "\(jsNum(s))%") }
         }
         HStack(spacing: 6) {
           Text(L("手改")).font(Font2.ui(11.5)).foregroundStyle(pal.text3)
@@ -380,7 +380,7 @@ struct PositionCard: View {
           CommitField(placeholder: "", value: x.cost.map(jsNum) ?? "", width: 70) { edit(x.code, "cost", $0) }
           if edited { Button(L("恢复原值")) { reset(x.code) }.buttonStyle(MiniButton()) }
         }
-        Text("原系统今日信号：\(x.signal.isEmpty ? "—" : x.signal)\n做 T：\(x.tMsg.isEmpty ? "—" : x.tMsg)").font(Font2.ui(11.5)).foregroundStyle(pal.text3)
+        Text(L("原系统今日信号：") + (x.signal.isEmpty ? "—" : x.signal) + "\n" + L("做 T：") + (x.tMsg.isEmpty ? "—" : x.tMsg)).font(Font2.ui(11.5)).foregroundStyle(pal.text3)
       }
       .frame(width: 300, alignment: .leading)
       if let k = x.kline { KLineView(k: k, cost: x.cost).frame(height: 230) } else { Text(L("没有 K 线")).font(Font2.ui(12)).foregroundStyle(pal.text3) }
@@ -398,7 +398,7 @@ struct PositionCard: View {
     if let n = Double(v.trimmed()), n >= 0 { one[field] = n } else { one[field] = nil }
     all[code] = one.isEmpty ? nil : one
     model.store.set(["posEdits": all])
-    model.toast = one.isEmpty ? "已恢复量化系统的数字" : "已按你填的数字重算"
+    model.toast = one.isEmpty ? L("已恢复量化系统的数字") : L("已按你填的数字重算")
   }
 
   private func reset(_ code: String) {
@@ -450,7 +450,7 @@ struct KLineView: View {
       if let cost {
         var p = Path(); p.move(to: CGPoint(x: padL, y: y(cost))); p.addLine(to: CGPoint(x: W - padR, y: y(cost)))
         ctx.stroke(p, with: .color(pal.text2), style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
-        ctx.draw(Text("成本 \(jsNum(cost))").font(Font2.ui(10)).foregroundColor(pal.text2), at: CGPoint(x: padL + 30, y: y(cost) - 8))
+        ctx.draw(Text(L("成本 %@", jsNum(cost))).font(Font2.ui(10)).foregroundColor(pal.text2), at: CGPoint(x: padL + 30, y: y(cost) - 8))
       }
       if let first = k.dates.first, let last = k.dates.last {
         ctx.draw(Text(String(first.suffix(5))).font(Font2.num(10)).foregroundColor(pal.text3), at: CGPoint(x: padL + 16, y: H - 6))
@@ -477,23 +477,23 @@ struct SymbolPanel: View {
           Text(q.name).font(Font2.ui(20, .semibold)).foregroundStyle(pal.text)
           Text(q.code).font(Font2.num(13)).foregroundStyle(pal.text3)
         }
-        Text("\(q.index ? "指数" : ["cn": "A 股", "hk": "港股", "us": "美股"][q.market] ?? "") · \(F.statusText(q.status, q.market)) · 数据时间 \(F.rel(q.ts))").font(Font2.ui(12)).foregroundStyle(pal.text3)
+        Text("\(L(q.index ? "指数" : ["cn": "A 股", "hk": "港股", "us": "美股"][q.market] ?? "")) · \(F.statusText(q.status, q.market)) · " + L("数据时间 %@", F.rel(q.ts))).font(Font2.ui(12)).foregroundStyle(pal.text3)
         HStack(alignment: .firstTextBaseline, spacing: 10) {
           Text(F.price(q.price)).font(Font2.round(34, .medium)).foregroundStyle(pal.text)
           Text("\(F.signed(q.chg, 3))　\(F.pct(q.pct))").font(Font2.num(13, .semibold)).foregroundStyle(pal.change(q.pct, colors: model.store.colors))
         }
         SwiftUI.Grid(alignment: .leading, horizontalSpacing: 20, verticalSpacing: 6) {
-          GridRow { kv("今开", F.price(q.open)); kv("昨收", F.price(q.prev)) }
-          GridRow { kv("最高", F.price(q.high)); kv("最低", F.price(q.low)) }
+          GridRow { kv(L("今开"), F.price(q.open)); kv(L("昨收"), F.price(q.prev)) }
+          GridRow { kv(L("最高"), F.price(q.high)); kv(L("最低"), F.price(q.low)) }
         }
         Text(L("走势")).font(Font2.ui(13, .semibold)).foregroundStyle(pal.text).padding(.top, 6)
         if q.market != "cn" {
           Text(L("港股、美股暂时只显示报价；K 线可以在浏览器里看")).font(Font2.ui(12)).foregroundStyle(pal.text3)
         } else if let kline, !kline.isEmpty {
           KLineView(k: kline).frame(height: 220)
-          Text("MA10 浅金 · MA20 浅紫 · 近 \(kline.close.count) 个交易日").font(Font2.ui(11)).foregroundStyle(pal.text3)
+          Text(L("MA10 浅金 · MA20 浅紫 · 近 %@ 个交易日", "\(kline.close.count)")).font(Font2.ui(11)).foregroundStyle(pal.text3)
         } else {
-          Text(loaded ? "K 线加载失败" : "K 线加载中…").font(Font2.ui(12)).foregroundStyle(pal.text3)
+          Text(loaded ? L("K 线加载失败") : L("K 线加载中…")).font(Font2.ui(12)).foregroundStyle(pal.text3)
         }
         Text(L("价格到达提醒")).font(Font2.ui(13, .semibold)).foregroundStyle(pal.text).padding(.top, 6)
         HStack(spacing: 8) {
@@ -504,7 +504,7 @@ struct SymbolPanel: View {
         }.font(Font2.ui(12.5))
         Note(text: L("到价后发一次系统通知（每天最多一次）。只是提醒，不是买卖建议。"))
         Text(L("在网上看")).font(Font2.ui(13, .semibold)).foregroundStyle(pal.text).padding(.top, 6)
-        HStack(spacing: 6) { ForEach(links(q), id: \.0) { n, u in Button(n + " ↗") { model.openURL(u) }.buttonStyle(MiniButton()) } }
+        HStack(spacing: 6) { ForEach(links(q), id: \.0) { n, u in Button(L(n) + " ↗") { model.openURL(u) }.buttonStyle(MiniButton()) } }
       }
     }
     .task(id: key) { kline = await Fetch.daily(key); loaded = true }
