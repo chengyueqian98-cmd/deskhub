@@ -9,10 +9,13 @@ import Security
 enum Keychain {
   private static let service = "com.qianshengyue.desktophub.deepseek"
   private static let account = "api-key"
-  private static var base: [String: Any] { [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service, kSecAttrAccount as String: account] }
+  private static func base(_ service: String, _ account: String) -> [String: Any] {
+    [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service, kSecAttrAccount as String: account]
+  }
 
-  static func read() -> String? {
-    var q = base
+  /** 默认是 DeepSeek 的 Key；邮箱的应用专用密码用另一个服务名、账号是邮箱地址 */
+  static func read(service: String = service, account: String = account) -> String? {
+    var q = base(service, account)
     q[kSecReturnData as String] = true
     q[kSecMatchLimit as String] = kSecMatchLimitOne
     var out: CFTypeRef?
@@ -20,15 +23,15 @@ enum Keychain {
     return String(data: d, encoding: .utf8)
   }
 
-  static func save(_ key: String) -> Bool {
-    clear()
-    var q = base
+  static func save(_ key: String, service: String = service, account: String = account) -> Bool {
+    clear(service: service, account: account)
+    var q = base(service, account)
     q[kSecValueData as String] = Data(key.utf8)
     q[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
     return SecItemAdd(q as CFDictionary, nil) == errSecSuccess
   }
 
-  @discardableResult static func clear() -> Bool { SecItemDelete(base as CFDictionary) == errSecSuccess }
+  @discardableResult static func clear(service: String = service, account: String = account) -> Bool { SecItemDelete(base(service, account) as CFDictionary) == errSecSuccess }
   static var hasKey: Bool { read() != nil }
 }
 
@@ -409,7 +412,7 @@ extension DeskModel {
     toast = L(fallback ? "正在读取 %@ 封最近的邮件的正文…" : "正在读取 %@ 封重要邮件的正文…", "\(picks.count)")
     var bodies: [String] = []
     for x in picks {
-      if case .ok(let name, let email, let subject, let body) = await Fetch.mailBody(x.id, maxChars: 1500) {
+      if case .ok(let name, let email, let subject, let body) = await mailBody(x.id, maxChars: 1500) {
         bodies.append(DeskModel.mailPrompt(name.isEmpty ? x.name : name, email, subject.isEmpty ? x.subject : subject, body))
       }
     }

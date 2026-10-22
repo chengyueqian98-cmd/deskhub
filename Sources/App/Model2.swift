@@ -34,7 +34,7 @@ extension DeskModel {
   }
 
   /** 设置或布局变了：马上把相关的数据取一遍 */
-  func kickWidgets() { for k in ["crypto", "github", "feeds", "cities", "todos", "photos"] { kick(k) } }
+  func kickWidgets() { for k in ["crypto", "github", "feeds", "cities", "todos", "photos", "fx", "sys"] { kick(k) } }
 
   // —— 加密货币（CoinGecko，免费、不用注册） ——
   func refreshCrypto() async {
@@ -199,5 +199,46 @@ extension DeskModel {
     store.set(["skipVersion": u.version])
     update = nil
     updateStatus = ""
+  }
+
+  // —— 日程设置 ——
+  struct CalendarSettings { var apple: Bool, hidden: Set<String>, ics: [(name: String, url: String)], soonMin: Double, weekStart: Int }
+
+  var calendarSettings: CalendarSettings {
+    let c = store.data["calendarSettings"] as? JSON ?? [:]
+    return CalendarSettings(
+      apple: (c["apple"] as? Bool) != false,
+      hidden: Set(c["hidden"] as? [String] ?? []),
+      ics: (c["ics"] as? [JSON] ?? []).compactMap { j in (j["url"] as? String).map { (j["name"] as? String ?? "", $0) } },
+      soonMin: num(c["soonMin"]) ?? 20,
+      weekStart: Int(num(c["weekStart"]) ?? 1) == 7 ? 7 : 1)
+  }
+
+  func setCalendarSettings(_ patch: JSON) {
+    var c = store.data["calendarSettings"] as? JSON ?? [:]
+    for (k, v) in patch { c[k] = v }
+    store.set(["calendarSettings": c])
+  }
+
+  /** 订阅链接（Google 日历的 iCal 私密地址、Outlook 发布链接、学校课表）：半小时取一次 */
+  func refreshICS() async {
+    let r = CalendarRange.range()
+    var out: [CalEvent] = []
+    let palette: [[Int]] = [[106, 159, 216], [211, 160, 98], [90, 168, 130], [154, 140, 216], [211, 138, 166]]
+    for (i, f) in calendarSettings.ics.enumerated() {
+      guard let u = ICS.url(f.url), let d = try? await Fetch.get(u, timeout: 20) else { continue }
+      out += ICS.parse(String(decoding: d, as: UTF8.self), from: r.from, to: r.to, calendar: f.name.isEmpty ? (u.host ?? "") : f.name, color: palette[i % palette.count])
+    }
+    icsEvents = out
+    refreshCalendar()
+  }
+
+  // —— 汇率 ——
+  func refreshFX() async {
+    for it in instances("fx") {
+      let base = store.config(it.id)["base"] as? String ?? (appLang == "en" ? "USD" : "CNY")
+      guard let d = try? await Fetch.get(FX.url(base)), let j = (try? JSONSerialization.jsonObject(with: d)) as? JSON, let r = FX.parse(j) else { continue }
+      fx[it.id] = r
+    }
   }
 }

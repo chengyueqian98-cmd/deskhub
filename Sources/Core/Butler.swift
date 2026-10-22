@@ -251,8 +251,8 @@ enum Cands {
   }
 
   /** 日程：快开始了才说（20 分钟内）。只说「开始了」，不替你判断该不该去 */
-  static func calendar(_ c: CalendarState?, _ now: Double = nowMs()) -> [Candidate] {
-    guard let c, c.ok else { return [] }
+  static func calendar(_ c: CalendarState?, _ now: Double = nowMs(), soonMin: Double = soonMin) -> [Candidate] {
+    guard let c, c.ok, soonMin > 0 else { return [] }
     var out: [Candidate] = []
     for e in c.events where !e.allDay && e.start != 0 {
       let min = (e.start - now) / 60000
@@ -294,13 +294,14 @@ enum Cands {
     var maxPerPct = 20.0
     var mail: [MailItem]?
     var mailRules = MailRules()
+    var soonMin = Cands.soonMin
     var weather: Weather?
   }
 
   /** 全部候选。顺序即同分时的默认优先级 */
   static func all(_ s: Inputs, _ now: Double = nowMs()) -> [Candidate] {
     risk(s.quant, now)                                           // 钱最急
-      + calendar(s.calendar, now)                                // 马上要开始了
+      + calendar(s.calendar, now, soonMin: s.soonMin)                                // 马上要开始了
       + Plans.candidates(s.quotes, s.plans, now)                 // 到你设的价了
       + watch(s.quotes, s.watch, s.alertPct, now)                // 自选异动，只挂着
       + Plans.capCandidates(s.quant, acctSize: s.acctSize, maxPerPct: s.maxPerPct, now)

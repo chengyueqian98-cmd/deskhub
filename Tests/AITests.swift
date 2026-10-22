@@ -183,3 +183,85 @@ func updateTests() {
     ok(Update.parse(["tag_name": "v9", "prerelease": true]) == nil)
   }
 }
+
+func mailCalTests() {
+  test("邮件头：编码词（UTF-8 / GBK、B / Q）、折行、发件人") {
+    eq(Mime.decodeHeader("=?UTF-8?B?5L2g5aW9?= world"), "你好 world")
+    eq(Mime.decodeHeader("=?utf-8?Q?=E4=BD=A0=E5=A5=BD_there?="), "你好 there")
+    eq(Mime.decodeHeader("=?UTF-8?B?5L2g?= =?UTF-8?B?5aW9?="), "你好", "相邻编码词之间的空白去掉")
+    eq(Mime.decodeHeader("=?GB2312?B?xOO6ww==?="), "你好")
+    let h = Mime.headers("From: =?UTF-8?B?5byg5LiJ?= <zs@example.com>\r\nSubject: hello\r\n world\r\nDate: Tue, 20 Oct 2026 13:18:55 +0800 (CST)\r\n\r\nbody")
+    eq(h["subject"], "hello world")
+    let it = Mime.item(headers: "From: =?UTF-8?B?5byg5LiJ?= <zs@example.com>\r\nSubject: hi\r\nMessage-ID: <abc@x>\r\nDate: Tue, 20 Oct 2026 13:18:55 +0800\r\n", id: "imap:5", account: "Gmail")
+    eq(it.name, "张三"); eq(it.email, "zs@example.com"); eq(it.msgid, "abc@x"); ok(it.ts != nil)
+  }
+  test("邮件正文：multipart 优先 text/plain；base64、quoted-printable；HTML 去标签") {
+    let raw = "Content-Type: multipart/alternative; boundary=\"XX\"\r\n\r\n--XX\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n5L2g5aW977yM5LiW55WM\r\n--XX\r\nContent-Type: text/html\r\n\r\n<p>x</p>\r\n--XX--\r\n"
+    eq(Mime.body(Data(raw.utf8)), "你好，世界")
+    let qp = "Content-Type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n=E4=BD=A0=E5=A5=BD=\r\n world"
+    eq(Mime.body(Data(qp.utf8)), "你好 world")
+    let html = "Content-Type: text/html; charset=utf-8\r\n\r\n<html><style>a{}</style><p>Hi&nbsp;there</p><br>Bye</html>"
+    eq(Mime.body(Data(html.utf8)), "Hi there\n\nBye")
+  }
+  test("IMAP：搜索结果、字面量、服务商") {
+    eq(IMAPProviders.searchUIDs("* SEARCH 3 7 12\r\na3 OK done"), [3, 7, 12])
+    let d = Data("* 1 FETCH (UID 57 BODY[HEADER.FIELDS (FROM)] {11}\r\nFrom: a@b\r\n)\r\n* 2 FETCH (BODY[] {3}\r\nxyz UID 58)\r\na4 OK\r\n".utf8)
+    let l = IMAPProviders.literals(d)
+    eq(l.map(\.uid), [57, 58]); eq(String(decoding: l[0].block, as: UTF8.self), "From: a@b\r\n")
+    eq(IMAPProviders.guess("me@gmail.com"), "gmail"); eq(IMAPProviders.guess("x@foxmail.com"), "qq"); eq(IMAPProviders.guess("a@b.cn"), "custom")
+    eq(IMAPProviders.quote("a\"b\\c"), "\"a\\\"b\\\\c\"")
+  }
+  test("日历订阅：单次、全天、每周重复（BYDAY + COUNT）、删掉的那次、改过的那次") {
+    let ics = """
+    BEGIN:VCALENDAR
+    BEGIN:VEVENT
+    UID:a
+    SUMMARY:组会\\, 第三周
+    DTSTART:20261020T130000Z
+    DTEND:20261020T140000Z
+    END:VEVENT
+    BEGIN:VEVENT
+    UID:b
+    SUMMARY:国庆
+    DTSTART;VALUE=DATE:20261001
+    DTEND;VALUE=DATE:20261008
+    END:VEVENT
+    BEGIN:VEVENT
+    UID:c
+    SUMMARY:宏观经济
+    DTSTART;TZID=America/New_York:20261019T101000
+    DURATION:PT50M
+    RRULE:FREQ=WEEKLY;BYDAY=MO,WE,FR;COUNT=6
+    EXDATE;TZID=America/New_York:20261021T101000
+    END:VEVENT
+    BEGIN:VEVENT
+    UID:c
+    RECURRENCE-ID;TZID=America/New_York:20261023T101000
+    SUMMARY:宏观经济（改到下午）
+    DTSTART;TZID=America/New_York:20261023T150000
+    DTEND;TZID=America/New_York:20261023T155000
+    END:VEVENT
+    END:VCALENDAR
+    """
+    let from = localMs(2026, 9, 25), to = localMs(2026, 11, 30)
+    let evs = ICS.parse(ics, from: from, to: to, calendar: "课表")
+    let a = evs.first { $0.title.hasPrefix("组会") }!
+    eq(a.title, "组会, 第三周"); eq(a.end - a.start, 3600e3)
+    ok(evs.first { $0.title == "国庆" }!.allDay)
+    let macro = evs.filter { $0.title.hasPrefix("宏观经济") }
+    eq(macro.count, 5, "6 次里删掉 1 次")
+    eq(macro.filter { $0.title.contains("改到下午") }.count, 1)
+    eq(macro.first!.end - macro.first!.start, 50 * 60e3)
+    eq(ICS.parseDuration("P1DT2H"), (86400 + 7200) * 1000)
+    eq(ICS.url("webcal://p01.example.com/a.ics")?.scheme, "https")
+  }
+  test("农历和节日") {
+    eq(Lunar.text(localMs(2027, 2, 6, 12)), "正月初一")
+    eq(Lunar.festival(localMs(2027, 2, 6, 12)), "春节")
+    eq(Lunar.festival(localMs(2027, 2, 5, 12)), "除夕")
+    eq(Lunar.festival(localMs(2026, 9, 25, 12)), "中秋节")
+    eq(Lunar.festival(localMs(2026, 4, 5, 12)), "清明")
+    eq(Lunar.next(localMs(2026, 9, 20, 12))?.name, "中秋节"); eq(Lunar.next(localMs(2026, 9, 20, 12))?.days, 5)
+    eq(FX.parse(["result": "success", "rates": ["CNY": 7.1], "time_last_update_unix": 100])?.rates["CNY"], 7.1)
+  }
+}

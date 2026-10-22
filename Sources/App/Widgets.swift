@@ -209,12 +209,13 @@ struct CalendarWidget: View {
   }
 
   private func monthGrid(t: YMD, today: String, byDay: [String: [CalEvent]], dots: Bool) -> some View {
-    let cells = F.monthCells(t.y, t.m)
+    let ws = model.calendarSettings.weekStart
+    let cells = F.monthCells(t.y, t.m, weekStart: ws)
     let selKey = sel ?? today
     return VStack(spacing: 2) {
       HStack(spacing: 0) {
-        ForEach(Array(F.weekHeads.enumerated()), id: \.offset) { i, w in
-          Text(w).font(Font2.ui(10.5, .medium)).foregroundStyle(i > 4 ? pal.text3 : pal.text2).frame(maxWidth: .infinity)
+        ForEach(Array(F.weekHeads(ws).enumerated()), id: \.offset) { i, w in
+          Text(w).font(Font2.ui(10.5, .medium)).foregroundStyle((ws == 7 ? (i == 0 || i == 6) : i > 4) ? pal.text3 : pal.text2).frame(maxWidth: .infinity)
         }
       }
       ForEach(0..<6, id: \.self) { r in
@@ -391,7 +392,7 @@ struct MailWidget: View {
       WHead(icon: "envelope", title: widgetTitle(model, cell, L("邮件"))) {
         if cell.interactive {
           MoreLink(label: L("概括重要邮件")) { model.page = "home"; Task { await model.digestMail(into: nil) } }.help(L("读几封重要邮件的正文，让管家概括"))
-          MoreLink(label: L("打开邮件 ›")) { model.openApp("com.apple.mail") }
+          if model.mailSource == "apple" { MoreLink(label: L("打开邮件 ›")) { model.openApp("com.apple.mail") } }
         }
       }
       content.padding(.top, 6)

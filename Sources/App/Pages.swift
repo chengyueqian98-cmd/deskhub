@@ -243,7 +243,7 @@ struct ButlerPage: View {
       HStack(spacing: 12) {
         if let a = c.action, a.type == "nav" { Button(a.label) { model.page = "market" }.buttonStyle(PillButton()) }
         if let a = c.action, a.type == "mail" {
-          Button(a.label) { model.openURL(MailAPI.messageUrl(a.arg)) }.buttonStyle(PillButton())
+          Button(a.label) { model.openMail(a.arg) }.buttonStyle(PillButton())
         }
         link(L("晚点")) { model.snooze(c.id) }
         if !c.evidence.isEmpty { link(openEv.contains(c.id) ? L("收起证据") : L("证据")) { if openEv.contains(c.id) { openEv.remove(c.id) } else { openEv.insert(c.id) } } }

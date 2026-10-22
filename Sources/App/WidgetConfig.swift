@@ -3,7 +3,7 @@
 import SwiftUI
 
 enum WidgetConfig {
-  static let configurable: Set<String> = ["market", "weather", "worldclock", "news", "todo", "countdown", "crypto", "github", "rss", "photo", "pomodoro"]
+  static let configurable: Set<String> = ["market", "weather", "worldclock", "news", "todo", "countdown", "crypto", "github", "rss", "photo", "pomodoro", "fx"]
 }
 
 struct WidgetConfigPanel: View {
@@ -94,6 +94,14 @@ struct WidgetConfigPanel: View {
             }
           }
           Note(text: L("每半小时换一张；在浮层里点一下照片马上换。"))
+        case "fx":
+          field(L("基准货币")) {
+            let base = c["base"] as? String ?? (appLang == "en" ? "USD" : "CNY")
+            FlowRow(FX.names.keys.sorted().map { ($0, $0) }) { k, _ in Button(k) { c["base"] = k }.buttonStyle(ChipStyle(on: base == k)) }
+          }
+          field(L("换算成哪些（用逗号分开）")) { TextField("USD, EUR, JPY", text: list("targets")).textFieldStyle(.roundedBorder) }
+          field(L("金额")) { TextField("100", text: Binding(get: { num(c["amount"]).map(jsNum) ?? "" }, set: { c["amount"] = Double($0) })).textFieldStyle(.roundedBorder).frame(width: 120) }
+          Note(text: L("open.er-api.com 公开汇率，每天更新，仅供参考"))
         case "pomodoro":
           field(L("一次多久")) {
             let m = num(c["minutes"]) ?? 25
@@ -134,7 +142,7 @@ struct WidgetConfigPanel: View {
     Binding(get: { (c[k] as? [String] ?? []).map { k == "keys" ? Market.displayCode($0) : $0 }.joined(separator: ", ") },
             set: { v in
               let parts = v.components(separatedBy: CharacterSet(charactersIn: ",，")).map { $0.trimmed() }.filter { !$0.isEmpty }
-              c[k] = k == "keys" ? parts.compactMap { Market.toSinaKey($0) } : parts
+              c[k] = k == "keys" ? parts.compactMap { Market.toSinaKey($0) } : k == "targets" ? parts.map { $0.uppercased() } : parts
             })
   }
   private func str(_ k: String) -> Binding<String> { Binding(get: { c[k] as? String ?? "" }, set: { c[k] = $0.trimmed() }) }

@@ -55,7 +55,12 @@ enum F {
   static func hm(_ ms: Double) -> String { let t = ymd(ms); return "\(pad2(t.h)):\(pad2(t.mi))" }
 
   static var week: [String] { appLang == "en" ? ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] : ["周日", "周一", "周二", "周三", "周四", "周五", "周六"] }
-  static var weekHeads: [String] { appLang == "en" ? ["M", "T", "W", "T", "F", "S", "S"] : ["一", "二", "三", "四", "五", "六", "日"] }
+  /** 月历表头；weekStart 1 = 周一开头，7 = 周日开头 */
+  static func weekHeads(_ weekStart: Int = 1) -> [String] {
+    let mon = appLang == "en" ? ["M", "T", "W", "T", "F", "S", "S"] : ["一", "二", "三", "四", "五", "六", "日"]
+    return weekStart == 7 ? [mon[6]] + mon.prefix(6) : mon
+  }
+  static var weekHeads: [String] { weekHeads() }
   private static let months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
   static func monthName(_ m: Int) -> String { appLang == "en" ? months[(m - 1) % 12] : "\(m)月" }
   /** 周四 10月22日 / Thu, Oct 22 */
@@ -146,9 +151,9 @@ enum F {
   static func dayKey(_ ms: Double) -> String { let t = ymd(ms); return "\(t.y)-\(pad2(t.m))-\(pad2(t.d))" }
 
   /** 月历的 42 格（6 行 × 7 列，周一开头）。month 从 1 开始 */
-  static func monthCells(_ year: Int, _ month: Int) -> [(ms: Double, inMonth: Bool, day: Int, weekend: Bool)] {
+  static func monthCells(_ year: Int, _ month: Int, weekStart: Int = 1) -> [(ms: Double, inMonth: Bool, day: Int, weekend: Bool)] {
     let first = ymd(localMs(year, month, 1))
-    let startDay = 1 - ((first.wd + 6) % 7)
+    let startDay = 1 - (weekStart == 7 ? first.wd : (first.wd + 6) % 7)
     return (0..<42).map { i in
       let t = ymd(localMs(year, month, startDay + i, 12))
       return (localMs(t.y, t.m, t.d), t.m == month, t.d, t.wd == 0 || t.wd == 6)

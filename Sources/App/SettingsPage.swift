@@ -11,6 +11,10 @@ struct SettingsPage: View {
   @State private var keyStatus = ""
   @State private var hasKey = Keychain.hasKey
   @State private var loginOn = SMAppService.mainApp.status == .enabled
+  @State private var mailPass = ""
+  @State private var mailStatus = ""
+  @State private var icsName = ""
+  @State private var icsURL = ""
 
   var body: some View {
     let st = model.store
@@ -79,6 +83,10 @@ struct SettingsPage: View {
           Note(text: L("让 DeepSeek 看新邮件的发件人和主题（不看正文），挑出需要你处理的。要先填 DeepSeek 的 Key"))
         }
       }
+
+      section("邮件") { mailSection }
+
+      section("日程") { calendarSection }
 
       section(L("行情与观感")) {
         row(L("天气城市")) {
@@ -194,6 +202,137 @@ struct SettingsPage: View {
         }.buttonStyle(.plain)
       }
     }.padding(2).background(Capsule().fill(pal.fill))
+  }
+
+  // —— 邮件：「邮件」App / IMAP 邮箱（Gmail、iCloud、Outlook、QQ、163…）/ 不读 ——
+  private var mailCfg: JSON { model.store.data["mail"] as? JSON ?? [:] }
+  private func setMail(_ patch: JSON) {
+    var m = mailCfg
+    for (k, v) in patch { m[k] = v }
+    model.store.set(["mail": m])
+  }
+
+  @ViewBuilder private var mailSection: some View {
+    let src = model.mailSource
+    row("来源") {
+      HStack(spacing: 2) {
+        ForEach([("apple", "「邮件」App"), ("imap", "IMAP 邮箱"), ("off", "不读邮件")], id: \.0) { v, n in
+          Button { setMail(["source": v]) } label: {
+            Text(L(n)).font(Font2.ui(12, .medium)).foregroundStyle(v == src ? pal.text : pal.text2)
+              .padding(.horizontal, 12).padding(.vertical, 4).background(Capsule().fill(v == src ? pal.fill2 : .clear))
+          }.buttonStyle(.plain)
+        }
+      }.padding(2).background(Capsule().fill(pal.fill))
+    }
+    if src == "imap" {
+      let email = mailCfg["email"] as? String ?? ""
+      let p = IMAPProviders.by(mailCfg["provider"] as? String ?? IMAPProviders.guess(email))
+      row("邮箱地址") {
+        CommitField(placeholder: "you@gmail.com", value: email, width: 260, numeric: false) { v in
+          setMail(["email": v.trimmed(), "provider": IMAPProviders.guess(v.trimmed())])
+        }
+      }
+      row("服务商") {
+        FlowRow(IMAPProviders.all.map { ($0.id, $0.name) }) { id, n in
+          Button(L(n)) { setMail(["provider": id]) }.buttonStyle(ChipStyle(on: p.id == id))
+        }
+      }
+      if p.id == "custom" {
+        row("服务器") {
+          CommitField(placeholder: "imap.example.com", value: mailCfg["host"] as? String ?? "", width: 220, numeric: false) { setMail(["host": $0.trimmed()]) }
+          CommitField(placeholder: "993", value: num(mailCfg["port"]).map(jsNum) ?? "993", width: 60) { setMail(["port": Double($0) ?? 993]) }
+        }
+      }
+      row("应用专用密码") {
+        VStack(alignment: .leading, spacing: 6) {
+          HStack {
+            SecureField(Keychain.read(service: IMAPMail.keychainService, account: email) != nil ? L("已保存（想换就重新粘贴）") : L("粘贴应用专用密码 / 授权码"), text: $mailPass)
+              .textFieldStyle(.roundedBorder).frame(width: 260)
+            Button(L("保存")) {
+              guard !email.isEmpty, !mailPass.isEmpty else { mailStatus = L("先填邮箱地址和密码"); return }
+              mailStatus = Keychain.save(mailPass.trimmed(), service: IMAPMail.keychainService, account: email) ? L("已保存") : L("✗ 存进钥匙串失败")
+              mailPass = ""
+              model.kick("mail")
+            }.buttonStyle(MiniButton())
+            Button(L("测试连接")) {
+              guard let a = IMAPMail.account(model.store) else { mailStatus = L("先填邮箱地址"); return }
+              mailStatus = L("正在测试…")
+              Task { mailStatus = await IMAPMail.test(a).map { "✗ " + $0 } ?? L("✓ 连通了，能读到收件箱") }
+            }.buttonStyle(MiniButton())
+            if !p.help.isEmpty { Button(L("怎么生成 ›")) { model.openURL(p.help) }.buttonStyle(MiniButton()) }
+          }
+          Text(mailStatus.isEmpty ? L("不是网页登录密码：Gmail、iCloud、Outlook、Yahoo 叫「应用专用密码」，QQ、163 叫「授权码」，要先在邮箱网站上打开 IMAP 再生成。密码只存在这台电脑的钥匙串里。") : mailStatus)
+            .font(Font2.ui(12)).foregroundStyle(pal.text3).fixedSize(horizontal: false, vertical: true)
+        }
+      }
+    }
+    Note(text: L("只读：只取发件人、主题、时间；你点开某一封或让管家概括时才读那一封的正文。不发送、不删除、不标已读。"))
+  }
+
+  // —— 日程：系统日历（挑显示哪几个）+ 订阅链接 + 提前多久提醒 + 一周从哪天开始 ——
+  @ViewBuilder private var calendarSection: some View {
+    let cs = model.calendarSettings
+    row("系统日历") {
+      Toggle("", isOn: Binding(get: { cs.apple }, set: { model.setCalendarSettings(["apple": $0]) })).toggleStyle(.switch).labelsHidden()
+      Note(text: L("读 Mac「日历」App 里的日程（包括你在里面登录的 Google、Outlook、iCloud 账户）"))
+    }
+    if cs.apple && Fetch.calendarStatus() == 3 {
+      row("显示哪些") {
+        FlowRow(Fetch.eventStore.calendars(for: .event).map { ($0.calendarIdentifier, $0.title) }) { id, n in
+          Button(n) {
+            var h = cs.hidden
+            if h.contains(id) { h.remove(id) } else { h.insert(id) }
+            model.setCalendarSettings(["hidden": Array(h)])
+          }.buttonStyle(ChipStyle(on: !cs.hidden.contains(id)))
+        }
+      }
+    }
+    row("订阅链接") {
+      VStack(alignment: .leading, spacing: 6) {
+        ForEach(Array(cs.ics.enumerated()), id: \.offset) { i, f in
+          HStack {
+            Text(f.name.isEmpty ? f.url : f.name).font(Font2.ui(12.5)).foregroundStyle(pal.text).lineLimit(1).truncationMode(.middle).frame(maxWidth: 360, alignment: .leading)
+            Button(L("删除")) {
+              var list = model.store.data["calendarSettings"].flatMap { ($0 as? JSON)?["ics"] as? [JSON] } ?? []
+              if i < list.count { list.remove(at: i) }
+              model.setCalendarSettings(["ics": list])
+            }.buttonStyle(MiniButton())
+          }
+        }
+        HStack {
+          TextField(L("名字（可不填）"), text: $icsName).textFieldStyle(.roundedBorder).frame(width: 120)
+          TextField(L("https://… 或 webcal://… 的 .ics 地址"), text: $icsURL).textFieldStyle(.roundedBorder).frame(width: 300)
+          Button(L("添加")) {
+            guard ICS.url(icsURL) != nil, !icsURL.trimmed().isEmpty else { return }
+            let list = (model.store.data["calendarSettings"].flatMap { ($0 as? JSON)?["ics"] as? [JSON] } ?? []) + [["name": icsName.trimmed(), "url": icsURL.trimmed()]]
+            model.setCalendarSettings(["ics": list])
+            icsName = ""; icsURL = ""
+          }.buttonStyle(MiniButton())
+        }
+        Note(text: L("Google 日历：设置 → 某个日历 → 「iCal 格式的私密地址」；Outlook：设置 → 日历 → 共享的日历 → 发布 → ICS 链接。Windows 版用的也是这种链接。"))
+      }
+    }
+    row("提前提醒") {
+      HStack(spacing: 2) {
+        ForEach([(0.0, "不提醒"), (5, "5 分钟"), (10, "10 分钟"), (20, "20 分钟"), (30, "30 分钟")], id: \.0) { v, n in
+          Button { model.setCalendarSettings(["soonMin": v]) } label: {
+            Text(L(n)).font(Font2.ui(12, .medium)).foregroundStyle(v == cs.soonMin ? pal.text : pal.text2)
+              .padding(.horizontal, 12).padding(.vertical, 4).background(Capsule().fill(v == cs.soonMin ? pal.fill2 : .clear))
+          }.buttonStyle(.plain)
+        }
+      }.padding(2).background(Capsule().fill(pal.fill))
+      Note(text: L("日程快开始时管家说一声"))
+    }
+    row("每周开始于") {
+      HStack(spacing: 2) {
+        ForEach([(1, "周一"), (7, "周日")], id: \.0) { v, n in
+          Button { model.setCalendarSettings(["weekStart": v]) } label: {
+            Text(L(n)).font(Font2.ui(12, .medium)).foregroundStyle(v == cs.weekStart ? pal.text : pal.text2)
+              .padding(.horizontal, 12).padding(.vertical, 4).background(Capsule().fill(v == cs.weekStart ? pal.fill2 : .clear))
+          }.buttonStyle(.plain)
+        }
+      }.padding(2).background(Capsule().fill(pal.fill))
+    }
   }
 
   private func setRules(_ patch: JSON) {

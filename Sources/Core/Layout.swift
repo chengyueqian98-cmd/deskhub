@@ -56,6 +56,11 @@ let WIDGETS: [WidgetDef] = [
   WidgetDef(id: "rss", label: "订阅", size: "L", sizes: ["M", "L", "T"], multi: true, labelEn: "Feed"),
   WidgetDef(id: "photo", label: "照片", size: "L", sizes: ["S", "M", "L", "T", "W", "XL"], multi: true, labelEn: "Photos"),
   WidgetDef(id: "pomodoro", label: "番茄钟", size: "S", sizes: ["S", "M"], labelEn: "Focus Timer"),
+  WidgetDef(id: "sysstat", label: "系统状态", size: "M", sizes: ["S", "M", "L"], labelEn: "System"),
+  WidgetDef(id: "note", label: "便签", size: "M", sizes: ["S", "M", "L", "T"], multi: true, labelEn: "Note"),
+  WidgetDef(id: "fx", label: "汇率", size: "M", sizes: ["S", "M", "L"], multi: true, labelEn: "Exchange Rates"),
+  WidgetDef(id: "lunar", label: "农历节日", size: "S", sizes: ["S", "M"], labelEn: "Lunar & Holidays"),
+  WidgetDef(id: "nowplaying", label: "正在播放", size: "M", sizes: ["M", "W"], labelEn: "Now Playing"),
 ]
 
 /** 按种类找登记项。用数组查找而不是字典，不会有 JS 那种 `__proto__` 取到原型的问题 */

@@ -30,6 +30,11 @@ final class DeskModel: ObservableObject {
   var runningReminders = Set<String>()
   // —— 新组件的数据（按组件 id 分开存：同一种可以加好几个，各看各的） ——
   @Published var crypto: [String: [CoinQuote]] = [:]
+  var icsEvents: [CalEvent] = []
+  @Published var sys = SysStat()
+  @Published var fx: [String: (rates: [String: Double], updated: Double)] = [:]
+  @Published var nowPlaying: NowPlaying?
+  let sampler = SysSampler()                        // 订阅链接里的日程
   @Published var repos: [String: [RepoInfo]] = [:]
   @Published var feeds: [String: NewsState] = [:]
   @Published var todos: TodoState?
@@ -69,6 +74,8 @@ final class DeskModel: ObservableObject {
       if keys.contains("city") { self.kick("weather") }
       if keys.contains("newsSources") { self.kick("news") }
       if keys.contains("quantDir") { self.watchQuant() }
+      if keys.contains("mail") { self.kick("mail") }
+      if keys.contains("calendarSettings") { self.kick("ics"); self.refreshCalendar() }
       self.onKeys?(keys)
     }
   }
@@ -79,7 +86,8 @@ final class DeskModel: ObservableObject {
     loop("news", every: { 15 * 60 }) { await $0.refreshNews() }
     loop("weather", every: { 15 * 60 }) { await $0.refreshWeather() }
     loop("quant", every: { 60 }) { await $0.refreshQuant() }
-    loop("calendar", every: { 30 * 60 }) { $0.refreshCalendar() }   // 日程变了系统会发通知（见下），这里只是兜底
+    loop("calendar", every: { 30 * 60 }) { $0.refreshCalendar() }
+    loop("ics", every: { 30 * 60 }) { await $0.refreshICS() }   // 日程变了系统会发通知（见下），这里只是兜底
     if !measuring { loop("mail", every: { 2 * 60 }) { await $0.refreshMail() } }
     loop("reminders", every: { 30 }) { $0.checkReminders() }
     loop("crypto", every: { 120 }) { await $0.refreshCrypto() }
@@ -89,6 +97,17 @@ final class DeskModel: ObservableObject {
     loop("todos", every: { 10 * 60 }) { $0.refreshTodos() }
     loop("photos", every: { 30 * 60 }) { $0.rotatePhotos() }
     loop("update", every: { 6 * 3600 }) { await $0.checkUpdate() }
+    // 系统状态：只有组件开着才采样（桌面上 5 秒一次，浮层开着 2 秒一次）
+    loop("sys", every: { [unowned self] in self.instances("sysstat").isEmpty ? 60 : (self.overlayVisible ? 2 : 5) }) { m in
+      if !m.instances("sysstat").isEmpty { m.sys = m.sampler.sample() }
+    }
+    loop("fx", every: { 6 * 3600 }) { await $0.refreshFX() }
+    for (name, app) in [("com.apple.Music.playerInfo", "Music"), ("com.spotify.client.PlaybackStateChanged", "Spotify")] {
+      DistributedNotificationCenter.default().addObserver(forName: .init(name), object: nil, queue: .main) { [weak self] n in
+        let info = n.userInfo ?? [:]
+        MainActor.assumeIsolated { self?.playerChanged(app: app, info: info) }
+      }
+    }
     Font2.scale = theme.scale
     NotificationCenter.default.addObserver(forName: .EKEventStoreChanged, object: Fetch.eventStore, queue: .main) { [weak self] _ in
       MainActor.assumeIsolated { self?.refreshCalendar(); self?.refreshTodos() }
@@ -170,8 +189,15 @@ final class DeskModel: ObservableObject {
     scheduleButler()
   }
 
+  /** 系统日历（可以挑掉不想看的那几个）+ 订阅链接，合在一起 */
   func refreshCalendar() {
-    calendar = Fetch.calendar()
+    let cs = calendarSettings
+    var c = Fetch.calendar(apple: cs.apple, hidden: cs.hidden)
+    if !icsEvents.isEmpty {
+      if !c.ok && !cs.apple { c = CalendarState(ok: true) }
+      if c.ok { c.events = (c.events + icsEvents).sorted { $0.start < $1.start } } else if cs.apple && !cs.ics.isEmpty { c = CalendarState(ok: true, events: icsEvents, error: c.error) }
+    }
+    calendar = c
     scheduleButler()
   }
 
@@ -180,10 +206,35 @@ final class DeskModel: ObservableObject {
     scheduleButler()
   }
 
+  /** 邮件从哪来：apple 邮件 App（默认）/ imap 邮箱 / off 不读 */
+  var mailSource: String { (store.data["mail"] as? JSON)?["source"] as? String ?? "apple" }
+
   func refreshMail() async {
-    mail = await Fetch.mail()
+    switch mailSource {
+    case "off": mail = MailState(ok: false, error: L("没有开邮件：到「设置 → 邮件」里选一个邮箱"))
+    case "imap":
+      if let a = IMAPMail.account(store) { mail = await IMAPMail.unread(a) } else { mail = MailState(ok: false, error: L("还没填邮箱地址：到「设置 → 邮件」里填")) }
+    default: mail = await Fetch.mail()
+    }
     await classifyMail()
     scheduleButler()
+  }
+
+  /** 读一封的正文：IMAP 邮箱直连服务器，「邮件」App 用 AppleScript */
+  func mailBody(_ id: String, maxChars: Int = 8000) async -> Fetch.MailBody {
+    if id.hasPrefix("imap:"), let a = IMAPMail.account(store) { return await IMAPMail.body(a, uid: String(id.dropFirst(5))) }
+    return await Fetch.mailBody(id, maxChars: maxChars)
+  }
+
+  /** 在邮箱里打开这封：「邮件」App 直接定位；IMAP 邮箱打开网页版（Gmail 能定位到这封） */
+  func openMail(_ id: String) {
+    if id.hasPrefix("imap:"), let a = IMAPMail.account(store) {
+      let msgid = mail?.items.first { $0.id == id }?.msgid ?? ""
+      let u = IMAPMail.webURL(a, msgid: msgid)
+      if !u.isEmpty { openURL(u) }
+      return
+    }
+    openURL(MailAPI.messageUrl(id))
   }
 
   func refreshQuant() async {
@@ -234,6 +285,7 @@ final class DeskModel: ObservableObject {
       inp.maxPerPct = self.store.maxPerPct
       inp.mail = self.mail?.ok == true ? self.mail?.items : nil
       inp.mailRules = self.mailRulesNow
+      inp.soonMin = self.calendarSettings.soonMin
       inp.weather = self.weather
       var day = self.butler
       day.refresh(Cands.all(inp))

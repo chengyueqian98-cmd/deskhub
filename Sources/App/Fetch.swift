@@ -94,11 +94,14 @@ enum Fetch {
     }
   }
 
-  static func calendar() -> CalendarState {
+  static func calendar(apple: Bool = true, hidden: Set<String> = []) -> CalendarState {
+    guard apple else { return CalendarState(ok: true, at: nowMs()) }
     let st = calendarStatus()
     guard st == 3 else { return CalendarState(ok: false, error: L(CalendarRange.statusText[st] ?? "没有日历权限"), needAuth: st == 0) }
     let r = CalendarRange.range()
-    let pred = eventStore.predicateForEvents(withStart: Date(timeIntervalSince1970: r.from / 1000), end: Date(timeIntervalSince1970: r.to / 1000), calendars: nil)
+    let cals = eventStore.calendars(for: .event).filter { !hidden.contains($0.calendarIdentifier) }
+    if cals.isEmpty { return CalendarState(ok: true, at: nowMs()) }
+    let pred = eventStore.predicateForEvents(withStart: Date(timeIntervalSince1970: r.from / 1000), end: Date(timeIntervalSince1970: r.to / 1000), calendars: cals)
     let evs = eventStore.events(matching: pred).prefix(400).map { e -> CalEvent in
       let c = e.calendar?.color?.usingColorSpace(.sRGB)
       return CalEvent(

@@ -23,7 +23,8 @@ enum Snapshot {
       store = Store(url: url)
       var L = normalize(presetLayout(demo == "minimal" ? "minimal" : "work"))
       if demo == "all" {
-        for (id, col, row, size) in [("todo", 2, 0, "M"), ("countdown", 4, 0, "M"), ("crypto", 2, 1, "M"), ("github", 4, 1, "M"), ("rss", 2, 2, "L"), ("pomodoro", 4, 2, "S"), ("market", 5, 2, "S")] {
+        let extra = ProcessInfo.processInfo.environment["DESKHUB_SET"] == "2" ? [("sysstat", 2, 0, "M"), ("note", 4, 0, "M"), ("fx", 2, 1, "M"), ("lunar", 4, 1, "S"), ("nowplaying", 2, 2, "W")] : [("todo", 2, 0, "M"), ("countdown", 4, 0, "M"), ("crypto", 2, 1, "M"), ("github", 4, 1, "M"), ("rss", 2, 2, "L"), ("pomodoro", 4, 2, "S"), ("market", 5, 2, "S")]
+        for (id, col, row, size) in extra {
           L = toggle(L.json, id, true)
           L = move(L.json, id, col, row)
           L = setSize(L.json, id, size)
@@ -55,6 +56,10 @@ enum Snapshot {
       _ = await (a, b, c, d, e)
       if demo != nil {
         await model.refreshCrypto(); await model.refreshRepos(); await model.refreshFeeds()
+        await model.refreshFX()
+        model.sys = SysStat(cpu: 23, mem: 61, diskFree: 212e9, diskTotal: 494e9, up: 48_000, down: 1_350_000, battery: 87, charging: false)
+        model.store.setConfig("note", ["text": appLang == "en" ? "Pick up the package\nEmail Prof. Lee about the lab" : "取快递\n给李老师回邮件问实验报告"])
+        model.nowPlaying = NowPlaying(app: "Music", title: "晴天", artist: "周杰伦", album: "叶惠美", playing: true, duration: 269, position: 83)
         // README 截图用示例待办和日程（不读用户自己的日历）
         let t = ymd(nowMs())
         let at = { (h: Int, m: Int) in localMs(t.y, t.m, t.d, h, m) }

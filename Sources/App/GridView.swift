@@ -96,6 +96,11 @@ struct GridView: View {
     case "rss": FeedWidget(model: model, cell: c)
     case "photo": PhotoWidget(model: model, cell: c)
     case "pomodoro": PomodoroWidget(model: model, cell: c)
+    case "sysstat": SysWidget(model: model, cell: c)
+    case "note": NoteWidget(model: model, cell: c)
+    case "fx": FXWidget(model: model, cell: c)
+    case "lunar": LunarWidget(model: model, cell: c)
+    case "nowplaying": NowPlayingWidget(model: model, cell: c)
     default: EmptyView()
     }
   }

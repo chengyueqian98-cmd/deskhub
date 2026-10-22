@@ -81,6 +81,7 @@ struct MailItem: Equatable {
   var ts: Double?
   var id: String
   var account = ""
+  var msgid = ""      // 邮件自己的 Message-ID（IMAP 邮箱在网页里打开那封信用）
 }
 
 struct MailState {

@@ -223,7 +223,7 @@ struct MailPanel: View {
           } label: {
             Text(L("让%@概括", model.store.butlerName)).font(Font2.ui(12, .semibold)).foregroundStyle(.white).padding(.horizontal, 14).padding(.vertical, 5).background(Capsule().fill(pal.accent))
           }.buttonStyle(.plain).disabled(!isOk)
-          Button(L("在「邮件」中打开")) { model.openURL(MailAPI.messageUrl(id)) }.buttonStyle(PillButton())
+          Button(model.mailSource == "imap" ? L("在网页邮箱中打开") : L("在「邮件」中打开")) { model.openMail(id) }.buttonStyle(PillButton())
         }
         Rectangle().fill(pal.line).frame(height: 0.5)
         switch state {
@@ -234,7 +234,7 @@ struct MailPanel: View {
         }
       }
     }
-    .task(id: id) { state = nil; state = await Fetch.mailBody(id) }
+    .task(id: id) { state = nil; state = await model.mailBody(id) }
   }
 
   private var isOk: Bool { if case .ok = state { return true }; return false }
