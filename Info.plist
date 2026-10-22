@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleIdentifier</key><string>com.qianshengyue.desktophub.native</string>
+  <key>CFBundleName</key><string>桌面信息中心</string>
+  <key>CFBundleDisplayName</key><string>桌面信息中心</string>
+  <key>CFBundleExecutable</key><string>DeskHub</string>
+  <key>CFBundleIconFile</key><string>icon</string>
+  <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleShortVersionString</key><string>0.4.0</string>
+  <key>CFBundleVersion</key><string>4</string>
+  <key>LSMinimumSystemVersion</key><string>14.0</string>
+  <key>LSApplicationCategoryType</key><string>public.app-category.productivity</string>
+  <key>NSHighResolutionCapable</key><true/>
+  <key>NSSupportsAutomaticGraphicsSwitching</key><true/>
+  <key>NSCalendarsFullAccessUsageDescription</key><string>在桌面上显示你「日历」App 里今天和接下来几天的日程（只读，不修改）。</string>
+  <key>NSCalendarsUsageDescription</key><string>在桌面上显示你「日历」App 里的日程（只读，不修改）。</string>
+  <key>NSRemindersFullAccessUsageDescription</key><string>「待办」组件显示你「提醒事项」里没完成的事；在浮层里点圆圈可以标成已完成。</string>
+  <key>NSRemindersUsageDescription</key><string>「待办」组件显示你「提醒事项」里没完成的事。</string>
+  <key>NSAppleEventsUsageDescription</key><string>读取「邮件」App 里未读邮件的发件人和主题，显示在桌面上（不发送、不删除、不标记已读）。</string>
+  <key>NSAppTransportSecurity</key>
+  <dict>
+    <key>NSAllowsLocalNetworking</key><true/>
+    <key>NSExceptionDomains</key>
+    <dict>
+      <key>rthk.hk</key>
+      <dict>
+        <key>NSIncludesSubdomains</key><true/>
+        <key>NSExceptionAllowsInsecureHTTPLoads</key><true/>
+      </dict>
+    </dict>
+  </dict>
+</dict>
+</plist>
