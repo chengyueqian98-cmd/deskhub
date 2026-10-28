@@ -163,7 +163,16 @@ final class Overlay: NSObject, NSWindowDelegate {
     return fx
   }
 
+  /** 失焦就收起——但自己弹的确认框、选文件夹面板也会抢走焦点，那种不算（否则浮层连同对话框一起消失，看着像点了没反应）。
+      等这一轮事件处理完再看焦点落到了谁身上 */
   nonisolated func windowDidResignKey(_ notification: Notification) {
-    MainActor.assumeIsolated { self.hide(restore: false) }
+    MainActor.assumeIsolated {
+      DispatchQueue.main.async { [weak self] in
+        guard let self, let p = self.panel, p.isVisible, !p.isKeyWindow else { return }
+        if p.attachedSheet != nil || NSApp.modalWindow != nil { return }
+        if NSApp.isActive, let k = NSApp.keyWindow, k !== p { return }
+        self.hide(restore: false)
+      }
+    }
   }
 }
