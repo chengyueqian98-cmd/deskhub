@@ -48,6 +48,49 @@
   </div>
 </header>
 
+<section id="demo">
+  <div class="wrap">
+    <div class="head">
+      <h2><span data-zh>看它怎么用</span><span data-en>See it in action</span></h2>
+      <p><span data-zh>收起桌面图标 按一下快捷键 问一句 再按 Esc 回到桌面</span><span data-en>Hide the icons, press one shortcut, ask a question, then Esc back to your desktop.</span></p>
+    </div>
+    <!-- 演示动画：纯 HTML/CSS 画的桌面，app.js 按时间轴切换状态；减少动态效果时只显示静止画面 -->
+    <div class="demo" id="demo-stage" aria-hidden="true">
+      <div class="stage">
+        <div class="menubar"><b><span data-zh>一瞥</span><span data-en>Glancedesk</span></b><span>9:45</span></div>
+        <div class="w w-clock"><div class="d"><span data-zh>周四 10月29日</span><span data-en>Thu, Oct 29</span></div><div class="t">09:45</div><div class="d"><span data-zh>北京 21:45</span><span data-en>Beijing 21:45</span></div></div>
+        <div class="w w-butler"><div class="h"><span data-zh>✦ 管家</span><span data-en>✦ Butler</span></div><div class="big"><span data-zh>早上好</span><span data-en>Good morning</span></div><div class="row warn"><span data-zh>15 分钟后：设计评审</span><span data-en>In 15 min: Design review</span></div><div class="row"><span data-zh>今天有雨 记得带伞</span><span data-en>Rain today. Bring an umbrella.</span></div></div>
+        <div class="w w-weather"><div class="h"><span data-zh>上海</span><span data-en>Shanghai</span></div><div class="temp">☁︎ 21°</div><div class="row"><span data-zh>小雨 · 最高 23° 最低 17°</span><span data-en>Light rain · H 23° L 17°</span></div></div>
+        <div class="w w-cal"><div class="h"><span data-zh>今天</span><span data-en>Today</span></div>
+          <div class="ev b"><i>10:00</i><span data-zh>设计评审</span><span data-en>Design review</span></div>
+          <div class="ev o"><i>12:30</i><span data-zh>和小林吃午饭</span><span data-en>Lunch with Lin</span></div>
+          <div class="ev g"><i>18:00</i><span data-zh>健身</span><span data-en>Gym</span></div></div>
+        <div class="w w-mkt"><div class="h"><span data-zh>行情</span><span data-en>Stocks</span></div>
+          <div class="q"><span data-zh>上证指数</span><span data-en>SSE</span><b>3,658.03</b><em class="up">▲0.82%</em></div>
+          <div class="q"><span data-zh>恒生指数</span><span data-en>HSI</span><b>22,919.11</b><em class="dn">▼0.41%</em></div>
+          <div class="q"><span data-zh>纳斯达克</span><span data-en>Nasdaq</span><b>26,702.86</b><em class="up">▲1.05%</em></div></div>
+        <div class="w w-mail"><div class="h"><span data-zh>邮件</span><span data-en>Mail</span></div><div class="m"><b>School Registrar</b><span>Spring enrollment opens Monday</span></div><div class="m"><b>GitHub</b><span data-zh>有人给你点了 Star</span><span data-en>Someone starred your repo</span></div></div>
+        <div class="icons">
+          <i style="--h:205;--i:0"></i><i style="--h:35;--i:1"></i><i style="--h:205;--i:2"></i><i style="--h:140;--i:3"></i><i style="--h:0;--i:4"></i><i style="--h:205;--i:5"></i><i style="--h:270;--i:6"></i><i style="--h:35;--i:7"></i><i style="--h:205;--i:8"></i><i style="--h:180;--i:9"></i><i style="--h:205;--i:10"></i><i style="--h:0;--i:11"></i>
+        </div>
+        <div class="switch"><span data-zh>隐藏桌面图标</span><span data-en>Hide desktop icons</span><b class="tg"></b></div>
+        <div class="veil"></div>
+        <div class="topbar"><span class="on"><span data-zh>主页</span><span data-en>Home</span></span><span><span data-zh>市场</span><span data-en>Markets</span></span><span><span data-zh>新闻</span><span data-en>News</span></span><span><span data-zh>设置</span><span data-en>Settings</span></span></div>
+        <div class="ask" id="demo-ask"><span class="ph"><span data-zh>问管家…</span><span data-en>Ask your butler…</span></span><span id="demo-q"></span><span class="caret"></span></div>
+        <div class="answer"><div class="qq" id="demo-qq"></div><div id="demo-a"></div></div>
+        <div class="keys" id="demo-keys"><kbd data-k="ctrl">⌃</kbd><kbd data-k="opt">⌥</kbd><kbd data-k="space" class="wide"><span data-zh>空格</span><span data-en>Space</span></kbd><kbd data-k="esc">esc</kbd></div>
+        <svg class="cursor" id="demo-cursor" viewBox="0 0 24 24"><path d="M5 2l14 13h-7.5L16 23l-3.4 1.4L8.2 16 5 19.4z" fill="#fff" stroke="#000" stroke-width="1.3" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+    <ol class="steps" id="demo-steps">
+      <li><span data-zh>一键收起桌面图标</span><span data-en>Hide the icons</span></li>
+      <li><span data-zh><span class="kbd">⌃⌥空格</span> 呼出</span><span data-en>Press <span class="kbd">⌃⌥Space</span></span></li>
+      <li><span data-zh>直接问管家</span><span data-en>Ask your butler</span></li>
+      <li><span data-zh><span class="kbd">Esc</span> 回到桌面</span><span data-en><span class="kbd">Esc</span> to go back</span></li>
+    </ol>
+  </div>
+</section>
+
 <section id="features">
   <div class="wrap">
     <div class="head">
