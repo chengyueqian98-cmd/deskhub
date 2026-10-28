@@ -10,7 +10,7 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <AssemblyName>Glancedesk</AssemblyName>
     <RootNamespace>DeskHub</RootNamespace>
-    <Version>0.5.1</Version>
+    <Version>0.5.2</Version>
     <Product>一瞥 Glancedesk</Product>
     <Company>Shengyue Qian</Company>
     <ApplicationIcon>icon.ico</ApplicationIcon>
